@@ -11,17 +11,7 @@ const WaveDivider: React.FC<{
       style={{ x: 'calc(-50% + 13px)' }} /* 稍微向右偏移 13px 確保完全遮蓋藍色板子的直邊 */
       transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Wave deep */}
-      <svg
-        viewBox="0 0 100 1000"
-        preserveAspectRatio="none"
-        className="absolute h-full w-full"
-      >
-        <path
-          d="M50,0 C70,250 30,500 50,750 C70,1000 30,1250 50,1500 L0,1500 L0,0 Z"
-          fill="#0a1628"
-        />
-      </svg>
+      {/* Wave path removed in Masking approach - the panel itself is clipped */}
       
       {/* Intersection Button */}
       <motion.div
