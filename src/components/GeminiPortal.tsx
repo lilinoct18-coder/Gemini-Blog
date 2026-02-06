@@ -1,18 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { motion, useTime, useTransform } from 'framer-motion';
+import { motion, useTime, useTransform, useSpring } from 'framer-motion';
 import WaveDivider from './WaveDivider';
 import { portalConfig } from './portal-config';
 
 const GeminiPortal: React.FC = () => {
   const [targetPos, setTargetPos] = useState(portalConfig.content.defaultPos);
   const [moveDirection, setMoveDirection] = useState<'right' | 'left'>('right');
-
-  const time = useTime();
-  
-  // 建立緩慢波動的偏移量 (使用正弦函數)
-  // 基礎週期約 4 秒 (4000ms)，振幅約 0.008 (0.8% 的寬度)
-  const waveOscillation = useTransform(time, (t) => Math.sin(t / 800) * 0.008);
-  const foamOscillation = useTransform(time, (t) => Math.sin(t / 600) * 0.012);
 
   const { physics, visuals, content } = portalConfig;
 
@@ -21,23 +14,42 @@ const GeminiPortal: React.FC = () => {
     return moveDirection === 'right' ? physics.moveRight : physics.moveLeft;
   }, [moveDirection, physics]);
 
+  // 使用 useSpring 處理基礎位置，確保平滑過渡
+  // 我們先使用一個預設的 spring，稍後會透過 useEffect 根據方向更新它
+  const basePosSpring = useSpring(portalConfig.content.defaultPos, currentSprings.deepWave);
+
+  // 當 targetPos 改變時，手動更新 basePosSpring 的目標值
+  // 並且我們需要確保 spring 的參數也隨之更新
+  React.useEffect(() => {
+    basePosSpring.set(targetPos);
+  }, [targetPos, basePosSpring]);
+
+  const time = useTime();
+  
+  // 建立緩慢波動的偏移量 (使用正弦函數)
+  const waveOscillation = useTransform(time, (t) => Math.sin(t / 800) * 0.008);
+  const foamOscillation = useTransform(time, (t) => Math.sin(t / 600) * 0.012);
+
   // 動態生成路徑的函數
   const getWavePath = (x: number, offset: number, oscillation: number = 0) => {
-    const ox = x + oscillation; // 加入波動偏移
+    const ox = x + oscillation;
     const x1 = ox;
     const x2 = ox + offset;
     const x3 = ox - offset;
-    // 使用 Cubic Bezier 建立 S 型曲線
     return `M 0,0 L ${x1},0 C ${x2},0.2 ${x3},0.4 ${x1},0.6 C ${x2},0.8 ${x3},1 ${x1},1 L 0,1 Z`;
   };
 
-  // Entrance paths starting from the far left (x=0)
+  // 將 basePosSpring 與 oscillation 結合，產生最終的路徑字串
+  const pathNormal = useTransform([basePosSpring, waveOscillation], ([pos, osc]) => 
+    getWavePath(pos as number, visuals.waveOffset, osc as number)
+  );
+
+  const pathWide = useTransform([basePosSpring, foamOscillation], ([pos, osc]) => 
+    getWavePath(pos as number, visuals.foamOffset, osc as number)
+  );
+
   const startPath = getWavePath(0, visuals.waveOffset);
   const startPathFoam = getWavePath(0, visuals.foamOffset);
-
-  // 我們需要將路徑字串也變成動態的，以便隨時間波動
-  const pathNormal = useTransform(waveOscillation, (o) => getWavePath(targetPos, visuals.waveOffset, o));
-  const pathWide = useTransform(foamOscillation, (o) => getWavePath(targetPos, visuals.foamOffset, o));
 
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-lilin-primary">
@@ -46,23 +58,19 @@ const GeminiPortal: React.FC = () => {
           <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
             <motion.path
               initial={{ d: startPath }}
-              animate={{ d: pathNormal.get() }}
               style={{ d: pathNormal }}
-              transition={currentSprings.deepWave}
             />
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
             <motion.path
               initial={{ d: startPathFoam }}
-              animate={{ d: pathWide.get() }}
               style={{ d: pathWide }}
-              transition={currentSprings.foamWave}
             />
           </clipPath>
         </defs>
       </svg>
 
-      {/* Lilin Side (Static Background) */}
+      {/* Lilin Side */}
       <div className="absolute inset-0 bg-lilin-primary flex flex-col justify-center items-center p-12 text-center z-0">
         <motion.div 
           className="z-10 ml-[25%] w-[50%]"
@@ -126,9 +134,8 @@ const GeminiPortal: React.FC = () => {
         }}
       />
 
-      {/* 傳遞波動值給 Divider 以保持同步 */}
       <WaveDivider 
-        leftPosition={`${targetPos * 100}%`}
+        leftPosition={basePosSpring}
         springConfig={currentSprings.majestic}
         oscillation={waveOscillation}
       />
