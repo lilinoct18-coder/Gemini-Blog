@@ -26,7 +26,7 @@ const GeminiPortal: React.FC = () => {
   // Majestic slow spring for initial entrance and transitions
   const majesticSpring: any = {
     type: "spring",
-    stiffness: 15, // Majestic slowness
+    stiffness: 15,
     damping: 20,
     mass: 1.5
   };
@@ -59,12 +59,17 @@ const GeminiPortal: React.FC = () => {
         </defs>
       </svg>
 
-      {/* Liling Side (Static Background) */}
+      {/* Lilin Side (Static Background) */}
       <div className="absolute inset-0 bg-liling-primary flex flex-col justify-center items-center p-12 text-center z-0">
-        <div className="z-10 ml-[25%] w-[50%]"> 
-          <h2 className="text-6xl font-bold text-liling-text mb-4 tracking-tighter font-serif uppercase">Liling</h2>
+        <motion.div 
+          className="z-10 ml-[25%] w-[50%]"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 3, delay: 1, ease: "easeOut" }}
+        > 
+          <h2 className="text-6xl font-bold text-liling-text mb-4 tracking-tighter font-serif uppercase text-shadow-sm">Lilin</h2>
           <p className="text-liling-accent uppercase tracking-[0.3em] text-sm">靈魂與觀察之火</p>
-        </div>
+        </motion.div>
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_75%_center,_var(--color-liling-accent)_0%,_transparent_70%)]" />
       </div>
 
@@ -79,10 +84,15 @@ const GeminiPortal: React.FC = () => {
         className="absolute inset-0 bg-novis-primary flex flex-col justify-center items-center p-12 text-center z-20 pointer-events-none"
         style={{ clipPath: 'url(#wave-clip)' }}
       >
-        <div className="z-10 mr-[25%] w-[50%]"> 
+        <motion.div 
+          className="z-10 mr-[25%] w-[50%]"
+          initial={{ x: '-100vw' }}
+          animate={{ x: '0vw' }}
+          transition={majesticSpring}
+        > 
           <h2 className="text-6xl font-bold text-novis-text mb-4 tracking-tighter uppercase">Novis</h2>
           <p className="text-novis-accent uppercase tracking-[0.3em] text-sm">理性與技術之海</p>
-        </div>
+        </motion.div>
         <div className="absolute inset-0 opacity-40 bg-gradient-to-br from-novis-primary via-novis-secondary to-novis-accent" />
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_25%_center,_var(--color-novis-accent)_0%,_transparent_70%)]" />
       </motion.div>
