@@ -53,9 +53,9 @@ export const portalConfig = {
       },
       majestic: {
         type: "spring" as const,
-        stiffness: 20,
-        damping: 25,
-        mass: 1.2,
+        stiffness: 15,
+        damping: 20,
+        mass: 1.5,
       },
     },
   },
