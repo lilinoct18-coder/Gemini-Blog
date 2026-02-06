@@ -21,7 +21,7 @@ const WaveDivider: React.FC<{
       
       {/* Intersection Button */}
       <motion.div
-        className="w-16 h-16 rounded-full bg-gradient-to-br from-novis-accent to-liling-accent flex items-center justify-center text-white text-3xl font-bold shadow-xl cursor-pointer pointer-events-auto"
+        className="w-16 h-16 rounded-full bg-gradient-to-br from-novis-accent to-lilin-accent flex items-center justify-center text-white text-3xl font-bold shadow-xl cursor-pointer pointer-events-auto"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.1, rotate: 5 }}

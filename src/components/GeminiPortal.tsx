@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import WaveDivider from './WaveDivider';
 
 const GeminiPortal: React.FC = () => {
-  const [hoverState, setHoverState] = useState<'novis' | 'liling' | null>(null);
+  const [hoverState, setHoverState] = useState<'novis' | 'lilin' | null>(null);
 
   const [targetPos, setTargetPos] = useState(0.5);
   
@@ -32,7 +32,7 @@ const GeminiPortal: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen flex overflow-hidden bg-liling-primary">
+    <div className="relative w-screen h-screen flex overflow-hidden bg-lilin-primary">
       {/* 
         Approach 3: Masking Effect (Enhanced with slow majestic entrance from left)
       */}
@@ -60,17 +60,17 @@ const GeminiPortal: React.FC = () => {
       </svg>
 
       {/* Lilin Side (Static Background) */}
-      <div className="absolute inset-0 bg-liling-primary flex flex-col justify-center items-center p-12 text-center z-0">
+      <div className="absolute inset-0 bg-lilin-primary flex flex-col justify-center items-center p-12 text-center z-0">
         <motion.div 
           className="z-10 ml-[25%] w-[50%]"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 3, delay: 1, ease: "easeOut" }}
         > 
-          <h2 className="text-6xl font-bold text-liling-text mb-4 tracking-tighter font-serif uppercase text-shadow-sm">Lilin</h2>
-          <p className="text-liling-accent uppercase tracking-[0.3em] text-sm">靈魂與觀察之火</p>
+          <h2 className="text-6xl font-bold text-lilin-text mb-4 tracking-tighter font-serif uppercase text-shadow-sm">Lilin</h2>
+          <p className="text-lilin-accent uppercase tracking-[0.3em] text-sm">靈魂與觀察之火</p>
         </motion.div>
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_75%_center,_var(--color-liling-accent)_0%,_transparent_70%)]" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_75%_center,_var(--color-lilin-accent)_0%,_transparent_70%)]" />
       </div>
 
       {/* Foam Overlay (Clipped from Full Screen) */}
@@ -110,7 +110,7 @@ const GeminiPortal: React.FC = () => {
         className="absolute top-0 right-0 h-full z-30 cursor-pointer" 
         style={{ width: `${(1 - basePos) * 100}%` }}
         onMouseEnter={() => {
-          setHoverState('liling');
+          setHoverState('lilin');
           setTargetPos(0.4);
         }}
       />
