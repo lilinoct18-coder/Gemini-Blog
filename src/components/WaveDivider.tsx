@@ -17,9 +17,15 @@ const WaveDivider: React.FC<{
         preserveAspectRatio="none"
         className="absolute h-full w-full"
       >
+        <defs>
+          <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0a1628" />
+            <stop offset="100%" stopColor="#1a2744" />
+          </linearGradient>
+        </defs>
         <path
           d="M50,0 C70,250 30,500 50,750 C70,1000 30,1250 50,1500 L0,1500 L0,0 Z"
-          fill="#0a1628"
+          fill="url(#wave-gradient)"
         />
       </svg>
       
