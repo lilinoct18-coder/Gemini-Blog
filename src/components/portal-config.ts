@@ -24,7 +24,7 @@ export const portalConfig = {
       },
       foamWave: {
         type: "spring" as const,
-        stiffness: 28,
+        stiffness: 15,
         damping: 12,
         mass: 1,
         restDelta: 0.001,
@@ -41,14 +41,14 @@ export const portalConfig = {
       deepWave: {
         type: "spring" as const,
         stiffness: 15, // 稍微快一點的回彈
-        damping: 25,
-        mass: 1.8,
+        damping: 12,
+        mass: 1,
       },
       foamWave: {
         type: "spring" as const,
-        stiffness: 35, // 更俐落的泡沫收回
-        damping: 15,
-        mass: 1,
+        stiffness: 12,
+        damping: 20,
+        mass: 2,
         restDelta: 0.001,
       },
       majestic: {
