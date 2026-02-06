@@ -5,15 +5,11 @@ import WaveDivider from './WaveDivider';
 const GeminiPortal: React.FC = () => {
   const [hoverState, setHoverState] = useState<'novis' | 'liling' | null>(null);
 
-  // Use framer-motion's useSpring or a motion variable to smoothly transition basePos
+  // Initial state should represent a straight vertical line or a centered wave to avoid the "top-left slide"
   const [targetPos, setTargetPos] = useState(0.5);
   
-  // Directly animate the basePos value using framer-motion's animate function logic
-  // or simply rely on motion.path's internal transition for the 'd' attribute.
-
   const basePos = targetPos; 
 
-  // We use 8 points for a smooth, stable wave that won't "fold"
   const getWavePath = (x: number, offset: number) => {
     const x1 = x;
     const x2 = x + offset;
@@ -21,7 +17,8 @@ const GeminiPortal: React.FC = () => {
     return `M 0,0 L ${x1},0 C ${x2},0.2 ${x3},0.4 ${x1},0.6 C ${x2},0.8 ${x3},1 ${x1},1 L 0,1 Z`;
   };
 
-  // Tidal variants calculated based on current basePos
+  // Pre-calculate initial path to use in 'initial' prop
+  const initialPath = getWavePath(0.5, 0.05);
   const pathNormal = getWavePath(basePos, 0.05);
   const pathWide = getWavePath(basePos, 0.08);
   const pathNarrow = getWavePath(basePos, 0.03);
@@ -37,6 +34,7 @@ const GeminiPortal: React.FC = () => {
         <defs>
           <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
             <motion.path
+              initial={{ d: initialPath }}
               animate={{
                 d: pathNormal
               }}
@@ -49,6 +47,7 @@ const GeminiPortal: React.FC = () => {
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
             <motion.path
+              initial={{ d: getWavePath(0.5, 0.08) }}
               animate={{
                 d: pathWide
               }}
