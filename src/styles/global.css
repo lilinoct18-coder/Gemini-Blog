@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-novis-primary: #0a1628;
+  --color-novis-secondary: #1a2744;
+  --color-novis-accent: #3b82f6;
+  --color-novis-text: #e0e7ff;
+  
+  --color-liling-primary: #faf8f3;
+  --color-liling-secondary: #f5f1e8;
+  --color-liling-accent: #d4a574;
+  --color-liling-text: #2d2520;
+}
+
+@layer base {
+  body {
+    @apply m-0 p-0 overflow-hidden h-screen w-screen font-serif;
+  }
+}
