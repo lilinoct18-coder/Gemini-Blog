@@ -5,11 +5,15 @@ import WaveDivider from './WaveDivider';
 const GeminiPortal: React.FC = () => {
   const [hoverState, setHoverState] = useState<'novis' | 'liling' | null>(null);
 
-  // The base split line position (0 to 1)
-  const basePos = hoverState === 'novis' ? 0.6 : hoverState === 'liling' ? 0.4 : 0.5;
+  // Use framer-motion's useSpring or a motion variable to smoothly transition basePos
+  const [targetPos, setTargetPos] = useState(0.5);
+  
+  // Directly animate the basePos value using framer-motion's animate function logic
+  // or simply rely on motion.path's internal transition for the 'd' attribute.
+
+  const basePos = targetPos; 
 
   // We use 8 points for a smooth, stable wave that won't "fold"
-  // Each path must have the same number of points and same command types
   const getWavePath = (x: number, offset: number) => {
     const x1 = x;
     const x2 = x + offset;
@@ -17,7 +21,7 @@ const GeminiPortal: React.FC = () => {
     return `M 0,0 L ${x1},0 C ${x2},0.2 ${x3},0.4 ${x1},0.6 C ${x2},0.8 ${x3},1 ${x1},1 L 0,1 Z`;
   };
 
-  // Tidal variants
+  // Tidal variants calculated based on current basePos
   const pathNormal = getWavePath(basePos, 0.05);
   const pathWide = getWavePath(basePos, 0.08);
   const pathNarrow = getWavePath(basePos, 0.03);
@@ -28,31 +32,30 @@ const GeminiPortal: React.FC = () => {
         PRO ARCHITECTURE:
         1. Novis panel is FULL SCREEN but clipped. 
         2. clipPath uses objectBoundingBox relative to the FULL SCREEN.
-        3. This prevents aspect ratio distortion when the panel width changes.
       */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
             <motion.path
               animate={{
-                d: [pathNormal, pathWide, pathNarrow, pathNormal]
+                d: pathNormal
               }}
               transition={{
-                duration: 10,
-                repeat: Infinity,
-                ease: "linear" // Linear for smoother loop
+                type: "spring",
+                stiffness: 50,
+                damping: 20
               }}
             />
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
             <motion.path
               animate={{
-                d: [pathWide, pathNarrow, pathNormal, pathWide]
+                d: pathWide
               }}
               transition={{
-                duration: 12,
-                repeat: Infinity,
-                ease: "linear"
+                type: "spring",
+                stiffness: 40,
+                damping: 20
               }}
             />
           </clipPath>
@@ -91,12 +94,18 @@ const GeminiPortal: React.FC = () => {
       <div 
         className="absolute top-0 left-0 h-full z-30 cursor-pointer" 
         style={{ width: `${basePos * 100}%` }}
-        onMouseEnter={() => setHoverState('novis')}
+        onMouseEnter={() => {
+          setHoverState('novis');
+          setTargetPos(0.6);
+        }}
       />
       <div 
         className="absolute top-0 right-0 h-full z-30 cursor-pointer" 
         style={{ width: `${(1 - basePos) * 100}%` }}
-        onMouseEnter={() => setHoverState('liling')}
+        onMouseEnter={() => {
+          setHoverState('liling');
+          setTargetPos(0.4);
+        }}
       />
 
       <WaveDivider 
