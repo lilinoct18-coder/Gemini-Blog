@@ -23,7 +23,24 @@ const GeminiPortal: React.FC = () => {
   const pathNormal = getWavePath(basePos, 0.05);
   const pathWide = getWavePath(basePos, 0.08);
 
-  // Majestic slow spring for initial entrance and transitions
+  // Majestic slow spring for the main deep wave (Steady)
+  const deepWaveSpring: any = {
+    type: "spring",
+    stiffness: 12,
+    damping: 20,
+    mass: 2
+  };
+
+  // Fast, overshooting spring for the foam/tip (The "Surf" effect)
+  const foamWaveSpring: any = {
+    type: "spring",
+    stiffness: 28, // Faster drive
+    damping: 12,   // Low damping to allow overshoot/wash-up effect
+    mass: 1,
+    restDelta: 0.001
+  };
+
+  // Spring for text and divider to maintain a majestic feel
   const majesticSpring: any = {
     type: "spring",
     stiffness: 15,
@@ -34,7 +51,7 @@ const GeminiPortal: React.FC = () => {
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-lilin-primary">
       {/* 
-        Approach 3: Masking Effect (Enhanced with slow majestic entrance from left)
+        Approach 3: Masking Effect (Enhanced with Wave Physics)
       */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -44,7 +61,7 @@ const GeminiPortal: React.FC = () => {
               animate={{
                 d: pathNormal
               }}
-              transition={majesticSpring}
+              transition={deepWaveSpring}
             />
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
@@ -53,7 +70,7 @@ const GeminiPortal: React.FC = () => {
               animate={{
                 d: pathWide
               }}
-              transition={{ ...majesticSpring, stiffness: 10, mass: 2 }}
+              transition={foamWaveSpring}
             />
           </clipPath>
         </defs>
@@ -73,13 +90,13 @@ const GeminiPortal: React.FC = () => {
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_75%_center,_var(--color-lilin-accent)_0%,_transparent_70%)]" />
       </div>
 
-      {/* Foam Overlay (Clipped from Full Screen) */}
+      {/* Foam Overlay (Clipped from Full Screen - FAST & OVERSHOOTING) */}
       <motion.div
         className="absolute inset-0 bg-novis-accent opacity-10 z-10 pointer-events-none"
         style={{ clipPath: 'url(#foam-clip)' }}
       />
 
-      {/* Novis Side (Clipped from Full Screen) */}
+      {/* Novis Side (Clipped from Full Screen - STEADY & MAJESTIC) */}
       <motion.div
         className="absolute inset-0 bg-novis-primary flex flex-col justify-center items-center p-12 text-center z-20 pointer-events-none"
         style={{ clipPath: 'url(#wave-clip)' }}
@@ -88,7 +105,7 @@ const GeminiPortal: React.FC = () => {
           className="z-10 mr-[25%] w-[50%]"
           initial={{ x: '-100vw' }}
           animate={{ x: '0vw' }}
-          transition={majesticSpring}
+          transition={deepWaveSpring}
         > 
           <h2 className="text-6xl font-bold text-novis-text mb-4 tracking-tighter uppercase">Novis</h2>
           <p className="text-novis-accent uppercase tracking-[0.3em] text-sm">理性與技術之海</p>
