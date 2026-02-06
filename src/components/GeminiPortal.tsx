@@ -5,7 +5,6 @@ import WaveDivider from './WaveDivider';
 const GeminiPortal: React.FC = () => {
   const [hoverState, setHoverState] = useState<'novis' | 'liling' | null>(null);
 
-  // Initial state should represent a straight vertical line or a centered wave to avoid the "top-left slide"
   const [targetPos, setTargetPos] = useState(0.5);
   
   const basePos = targetPos; 
@@ -17,45 +16,44 @@ const GeminiPortal: React.FC = () => {
     return `M 0,0 L ${x1},0 C ${x2},0.2 ${x3},0.4 ${x1},0.6 C ${x2},0.8 ${x3},1 ${x1},1 L 0,1 Z`;
   };
 
-  // Pre-calculate initial path to use in 'initial' prop
-  const initialPath = getWavePath(0.5, 0.05);
+  // Entrance paths starting from the far left (x=0)
+  const startPath = getWavePath(0, 0.05);
+  const startPathFoam = getWavePath(0, 0.08);
+
   const pathNormal = getWavePath(basePos, 0.05);
   const pathWide = getWavePath(basePos, 0.08);
-  const pathNarrow = getWavePath(basePos, 0.03);
+
+  // Majestic slow spring for initial entrance and transitions
+  const majesticSpring: any = {
+    type: "spring",
+    stiffness: 15, // Majestic slowness
+    damping: 20,
+    mass: 1.5
+  };
 
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-liling-primary">
       {/* 
-        PRO ARCHITECTURE:
-        1. Novis panel is FULL SCREEN but clipped. 
-        2. clipPath uses objectBoundingBox relative to the FULL SCREEN.
+        Approach 3: Masking Effect (Enhanced with slow majestic entrance from left)
       */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
             <motion.path
-              initial={{ d: initialPath }}
+              initial={{ d: startPath }}
               animate={{
                 d: pathNormal
               }}
-              transition={{
-                type: "spring",
-                stiffness: 50,
-                damping: 20
-              }}
+              transition={majesticSpring}
             />
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
             <motion.path
-              initial={{ d: getWavePath(0.5, 0.08) }}
+              initial={{ d: startPathFoam }}
               animate={{
                 d: pathWide
               }}
-              transition={{
-                type: "spring",
-                stiffness: 40,
-                damping: 20
-              }}
+              transition={{ ...majesticSpring, stiffness: 10, mass: 2 }}
             />
           </clipPath>
         </defs>
@@ -63,7 +61,7 @@ const GeminiPortal: React.FC = () => {
 
       {/* Liling Side (Static Background) */}
       <div className="absolute inset-0 bg-liling-primary flex flex-col justify-center items-center p-12 text-center z-0">
-        <div className="z-10 ml-[25%] w-[50%]"> {/* Shift content right to stay in Liling territory */}
+        <div className="z-10 ml-[25%] w-[50%]"> 
           <h2 className="text-6xl font-bold text-liling-text mb-4 tracking-tighter font-serif uppercase">Liling</h2>
           <p className="text-liling-accent uppercase tracking-[0.3em] text-sm">靈魂與觀察之火</p>
         </div>
@@ -81,7 +79,7 @@ const GeminiPortal: React.FC = () => {
         className="absolute inset-0 bg-novis-primary flex flex-col justify-center items-center p-12 text-center z-20 pointer-events-none"
         style={{ clipPath: 'url(#wave-clip)' }}
       >
-        <div className="z-10 mr-[25%] w-[50%]"> {/* Shift content left to stay in Novis territory */}
+        <div className="z-10 mr-[25%] w-[50%]"> 
           <h2 className="text-6xl font-bold text-novis-text mb-4 tracking-tighter uppercase">Novis</h2>
           <p className="text-novis-accent uppercase tracking-[0.3em] text-sm">理性與技術之海</p>
         </div>
