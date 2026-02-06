@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import WaveDivider from './WaveDivider';
+import { portalConfig } from './portal-config';
 
 const GeminiPortal: React.FC = () => {
-  const [hoverState, setHoverState] = useState<'novis' | 'lilin' | null>(null);
+  const [targetPos, setTargetPos] = useState(portalConfig.content.defaultPos);
+  const [moveDirection, setMoveDirection] = useState<'right' | 'left'>('right');
 
-  const [targetPos, setTargetPos] = useState(0.5);
-  
   const basePos = targetPos; 
 
   const getWavePath = (x: number, offset: number) => {
@@ -16,37 +16,19 @@ const GeminiPortal: React.FC = () => {
     return `M 0,0 L ${x1},0 C ${x2},0.2 ${x3},0.4 ${x1},0.6 C ${x2},0.8 ${x3},1 ${x1},1 L 0,1 Z`;
   };
 
+  const { physics, visuals, content } = portalConfig;
+
+  // 根據當前移動方向選擇對應的彈力配置
+  const currentSprings = useMemo(() => {
+    return moveDirection === 'right' ? physics.moveRight : physics.moveLeft;
+  }, [moveDirection, physics]);
+
   // Entrance paths starting from the far left (x=0)
-  const startPath = getWavePath(0, 0.05);
-  const startPathFoam = getWavePath(0, 0.08);
+  const startPath = getWavePath(0, visuals.waveOffset);
+  const startPathFoam = getWavePath(0, visuals.foamOffset);
 
-  const pathNormal = getWavePath(basePos, 0.05);
-  const pathWide = getWavePath(basePos, 0.08);
-
-  // Majestic slow spring for the main deep wave (Steady)
-  const deepWaveSpring: any = {
-    type: "spring",
-    stiffness: 12,
-    damping: 20,
-    mass: 2
-  };
-
-  // Fast, overshooting spring for the foam/tip (The "Surf" effect)
-  const foamWaveSpring: any = {
-    type: "spring",
-    stiffness: 28, // Faster drive
-    damping: 12,   // Low damping to allow overshoot/wash-up effect
-    mass: 1,
-    restDelta: 0.001
-  };
-
-  // Spring for text and divider to maintain a majestic feel
-  const majesticSpring: any = {
-    type: "spring",
-    stiffness: 15,
-    damping: 20,
-    mass: 1.5
-  };
+  const pathNormal = getWavePath(basePos, visuals.waveOffset);
+  const pathWide = getWavePath(basePos, visuals.foamOffset);
 
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-lilin-primary">
@@ -61,7 +43,7 @@ const GeminiPortal: React.FC = () => {
               animate={{
                 d: pathNormal
               }}
-              transition={deepWaveSpring}
+              transition={currentSprings.deepWave}
             />
           </clipPath>
           <clipPath id="foam-clip" clipPathUnits="objectBoundingBox">
@@ -70,7 +52,7 @@ const GeminiPortal: React.FC = () => {
               animate={{
                 d: pathWide
               }}
-              transition={foamWaveSpring}
+              transition={currentSprings.foamWave}
             />
           </clipPath>
         </defs>
@@ -84,8 +66,12 @@ const GeminiPortal: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 3, delay: 1, ease: "easeOut" }}
         > 
-          <h2 className="text-6xl font-bold text-lilin-text mb-4 tracking-tighter font-serif uppercase text-shadow-sm">Lilin</h2>
-          <p className="text-lilin-accent uppercase tracking-[0.3em] text-sm">靈魂與觀察之火</p>
+          <h2 className="text-6xl font-bold text-lilin-text mb-4 tracking-tighter font-serif uppercase text-shadow-sm">
+            {content.lilin.name}
+          </h2>
+          <p className="text-lilin-accent uppercase tracking-[0.3em] text-sm">
+            {content.lilin.tagline}
+          </p>
         </motion.div>
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_75%_center,_var(--color-lilin-accent)_0%,_transparent_70%)]" />
       </div>
@@ -105,10 +91,14 @@ const GeminiPortal: React.FC = () => {
           className="z-10 mr-[25%] w-[50%]"
           initial={{ x: '-100vw' }}
           animate={{ x: '0vw' }}
-          transition={deepWaveSpring}
+          transition={currentSprings.deepWave}
         > 
-          <h2 className="text-6xl font-bold text-novis-text mb-4 tracking-tighter uppercase">Novis</h2>
-          <p className="text-novis-accent uppercase tracking-[0.3em] text-sm">理性與技術之海</p>
+          <h2 className="text-6xl font-bold text-novis-text mb-4 tracking-tighter uppercase">
+            {content.novis.name}
+          </h2>
+          <p className="text-novis-accent uppercase tracking-[0.3em] text-sm">
+            {content.novis.tagline}
+          </p>
         </motion.div>
         <div className="absolute inset-0 opacity-40 bg-gradient-to-br from-novis-primary via-novis-secondary to-novis-accent" />
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_25%_center,_var(--color-novis-accent)_0%,_transparent_70%)]" />
@@ -119,21 +109,22 @@ const GeminiPortal: React.FC = () => {
         className="absolute top-0 left-0 h-full z-30 cursor-pointer" 
         style={{ width: `${basePos * 100}%` }}
         onMouseEnter={() => {
-          setHoverState('novis');
-          setTargetPos(0.6);
+          setMoveDirection('right');
+          setTargetPos(content.novis.activePos);
         }}
       />
       <div 
         className="absolute top-0 right-0 h-full z-30 cursor-pointer" 
         style={{ width: `${(1 - basePos) * 100}%` }}
         onMouseEnter={() => {
-          setHoverState('lilin');
-          setTargetPos(0.4);
+          setMoveDirection('left');
+          setTargetPos(content.lilin.activePos);
         }}
       />
 
       <WaveDivider 
         leftPosition={`${basePos * 100}%`}
+        springConfig={currentSprings.majestic}
       />
     </div>
   );

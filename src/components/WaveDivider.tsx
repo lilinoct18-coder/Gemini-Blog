@@ -1,21 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const WaveDivider: React.FC<{ 
-  leftPosition: string 
-}> = ({ leftPosition }) => {
+interface WaveDividerProps {
+  leftPosition: string;
+  springConfig: any;
+}
+
+const WaveDivider: React.FC<WaveDividerProps> = ({ leftPosition, springConfig }) => {
   return (
     <motion.div 
       className="absolute top-0 h-full w-[200px] pointer-events-none z-20 flex items-center justify-center"
       initial={{ left: '0%' }}
       animate={{ left: leftPosition }}
       style={{ x: 'calc(-50% + 13px)' }} /* 稍微向右偏移 13px 確保完全遮蓋藍色板子的直邊 */
-      transition={{
-        type: "spring",
-        stiffness: 15,
-        damping: 20,
-        mass: 1.5
-      }}
+      transition={springConfig}
     >
       {/* Wave path removed in Masking approach - the panel itself is clipped */}
       
