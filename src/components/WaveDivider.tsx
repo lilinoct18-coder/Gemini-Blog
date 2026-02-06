@@ -41,7 +41,7 @@ const WaveDivider: React.FC<{
       >
         &
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 
