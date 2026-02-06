@@ -1,9 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const WaveDivider: React.FC<{ hoverState: 'novis' | 'liling' | null }> = ({ hoverState }) => {
+const WaveDivider: React.FC<{ 
+  hoverState: 'novis' | 'liling' | null,
+  leftPosition: string 
+}> = ({ hoverState, leftPosition }) => {
   return (
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-[200px] pointer-events-none z-20 flex items-center justify-center">
+    <motion.div 
+      className="absolute top-0 h-full w-[200px] pointer-events-none z-20 flex items-center justify-center"
+      animate={{ left: leftPosition }}
+      style={{ x: '-50%' }}
+      transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+    >
       {/* Wave deep */}
       <svg
         viewBox="0 0 100 1000"

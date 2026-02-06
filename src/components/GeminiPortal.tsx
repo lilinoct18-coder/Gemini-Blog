@@ -35,7 +35,10 @@ const GeminiPortal: React.FC = () => {
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--color-liling-accent)_0%,_transparent_70%)]" />
       </motion.div>
 
-      <WaveDivider hoverState={hoverState} />
+      <WaveDivider 
+        hoverState={hoverState} 
+        leftPosition={hoverState === 'novis' ? '60%' : hoverState === 'liling' ? '40%' : '50%'}
+      />
     </div>
   );
 };
