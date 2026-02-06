@@ -2,14 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const WaveDivider: React.FC<{ 
-  hoverState: 'novis' | 'liling' | null,
   leftPosition: string 
-}> = ({ hoverState, leftPosition }) => {
+}> = ({ leftPosition }) => {
   return (
     <motion.div 
       className="absolute top-0 h-full w-[200px] pointer-events-none z-20 flex items-center justify-center"
       animate={{ left: leftPosition }}
-      style={{ x: '-50%' }}
+      style={{ x: 'calc(-50% + 1px)' }} /* 稍微向右偏移 1px 確保完全遮蓋藍色板子的直邊 */
       transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
     >
       {/* Wave deep */}

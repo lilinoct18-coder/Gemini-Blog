@@ -36,7 +36,6 @@ const GeminiPortal: React.FC = () => {
       </motion.div>
 
       <WaveDivider 
-        hoverState={hoverState} 
         leftPosition={hoverState === 'novis' ? '60%' : hoverState === 'liling' ? '40%' : '50%'}
       />
     </div>
