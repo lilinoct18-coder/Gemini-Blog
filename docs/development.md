@@ -155,6 +155,13 @@ human / ai 建置時會透過 host 網路連到本機 Ghost，故須先完成步
 | `docker compose -f docker-compose-dev.yaml down` | 停止並移除容器 |
 | `docker compose -f docker-compose-dev.yaml logs -f ghost` | 查看 Ghost 日誌 |
 
+## Testing 與 CI
+
+前端的檢查與 CI 流程（check、lint、format、unit test、E2E）有獨立說明，**建議 push 前在對應前端目錄跑一次檢查**，可減少 PR 上 CI 失敗。
+
+- **完整說明**：[Testing 與 CI 指南](testing.md)（含：在哪個目錄跑、各指令在做什麼、E2E 步驟、CI 怎麼看、失敗時怎麼查）
+- **重點**：`npm run check` / `lint` / `test` 等都要在 `frontend/astro-landing`、`frontend/astro-human` 或 `frontend/astro-ai` 底下跑，專案根目錄沒有 `package.json`。
+
 ## 常用指令
 
 | 指令 | 說明 |
