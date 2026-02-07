@@ -1,1 +1,1 @@
-declare module '@tryghost/content-api';
+declare module "@tryghost/content-api";

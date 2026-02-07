@@ -1,8 +1,8 @@
 ---
-import Layout from './Layout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import AIBadge from '../components/AIBadge.astro';
+import Layout from "./Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import AIBadge from "../components/AIBadge.astro";
 
 interface Props {
   title: string;
@@ -12,15 +12,21 @@ interface Props {
   featureImage?: string;
 }
 
-const { title, description, publishedAt, tags = [], featureImage } = Astro.props;
+const {
+  title,
+  description,
+  publishedAt,
+  tags = [],
+  featureImage,
+} = Astro.props;
 
 const formattedDate = publishedAt
-  ? new Date(publishedAt).toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+  ? new Date(publishedAt).toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     })
-  : '';
+  : "";
 ---
 
 <Layout title={`${title} | Lilin Blog`} description={description}>
@@ -28,13 +34,15 @@ const formattedDate = publishedAt
   <main class="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
     <article>
       <header class="mb-10">
-        {featureImage && (
-          <img
-            src={featureImage}
-            alt={title}
-            class="w-full h-64 object-cover rounded-lg mb-8"
-          />
-        )}
+        {
+          featureImage && (
+            <img
+              src={featureImage}
+              alt={title}
+              class="w-full h-64 object-cover rounded-lg mb-8"
+            />
+          )
+        }
         <div class="flex items-center gap-3 mb-4">
           <AIBadge />
         </div>
@@ -43,23 +51,27 @@ const formattedDate = publishedAt
         </h1>
         <div class="flex items-center gap-4 text-text-muted text-sm">
           {formattedDate && <time datetime={publishedAt}>{formattedDate}</time>}
-          {tags.length > 0 && (
-            <div class="flex gap-2">
-              {tags.map((tag) => (
-                <span class="px-2 py-1 bg-surface rounded text-xs text-accent">
-                  #{tag.name}
-                </span>
-              ))}
-            </div>
-          )}
+          {
+            tags.length > 0 && (
+              <div class="flex gap-2">
+                {tags.map((tag) => (
+                  <span class="px-2 py-1 bg-surface rounded text-xs text-accent">
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            )
+          }
         </div>
       </header>
-      <div class="prose prose-stone max-w-none
+      <div
+        class="prose prose-stone max-w-none
         prose-headings:text-text prose-p:text-text/90 prose-a:text-accent
         prose-strong:text-text prose-code:text-accent prose-code:bg-surface
         prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
         prose-pre:bg-surface prose-pre:border prose-pre:border-border
-        prose-img:rounded-lg prose-blockquote:border-accent">
+        prose-img:rounded-lg prose-blockquote:border-accent"
+      >
         <slot />
       </div>
     </article>

@@ -2,23 +2,30 @@
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="border-b border-border bg-primary/80 backdrop-blur-sm sticky top-0 z-50">
+<header
+  class="border-b border-border bg-primary/80 backdrop-blur-sm sticky top-0 z-50"
+>
   <nav class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <a href="/" class="text-xl font-bold text-text no-underline hover:text-accent transition-colors font-serif">
+    <a
+      href="/"
+      class="text-xl font-bold text-text no-underline hover:text-accent transition-colors font-serif"
+    >
       Lilin
     </a>
     <div class="flex items-center gap-6 text-sm">
       <a
         href="/"
         class:list={[
-          'no-underline transition-colors',
-          currentPath === '/' ? 'text-accent' : 'text-text-muted hover:text-text',
+          "no-underline transition-colors",
+          currentPath === "/"
+            ? "text-accent"
+            : "text-text-muted hover:text-text",
         ]}
       >
         文章
       </a>
       <a
-        href={import.meta.env.SITE_URL || '/'}
+        href={import.meta.env.SITE_URL || "/"}
         class="no-underline text-text-muted hover:text-text transition-colors"
       >
         返回入口

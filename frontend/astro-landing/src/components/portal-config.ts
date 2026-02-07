@@ -63,7 +63,7 @@ export const portalConfig = {
   visuals: {
     waveOffset: 0.05,
     foamOffset: 0.08,
-  }
+  },
 };
 
 export type PortalConfig = typeof portalConfig;
