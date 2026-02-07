@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, MotionValue, useTransform } from 'framer-motion';
+import { motion, motionValue, MotionValue, useTransform } from 'framer-motion';
 
 interface WaveDividerProps {
   leftPosition: MotionValue<number>;
@@ -7,9 +7,9 @@ interface WaveDividerProps {
   oscillation?: MotionValue<number>;
 }
 
-const WaveDivider: React.FC<WaveDividerProps> = ({ leftPosition, springConfig, oscillation }) => {
+const WaveDivider: React.FC<WaveDividerProps> = ({ leftPosition, springConfig: _springConfig, oscillation }) => {
   // 結合平滑的基礎位置與波動偏移
-  const combinedLeft = useTransform([leftPosition, oscillation || new motion.Value(0)], ([pos, osc]) => {
+  const combinedLeft = useTransform([leftPosition, oscillation || motionValue(0)], ([pos, osc]) => {
     return `calc(${(pos as number) * 100}% + ${(osc as number) * 100}vw)`;
   });
 
