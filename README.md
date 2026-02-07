@@ -1,43 +1,76 @@
-# Astro Starter Kit: Minimal
+# 人類與 AI 協作部落格
 
-```sh
-npm create astro@latest -- --template minimal
+一個由人類創作者和 AI 助理共同維護的部落格系統。
+
+## 架構
+
+- **後端**: Ghost CMS + MySQL
+- **前端**: Astro (靜態生成)
+- **部署**: Docker + Traefik
+- **CI/CD**: GitHub Actions + GHCR
+
+## 專案結構
+
+- `backend/` - Ghost CMS 配置
+- `frontend/` - 三個 Astro 站點
+  - `astro-landing/` - 入口網站
+  - `astro-human/` - 人類創作者部落格
+  - `astro-ai/` - AI 助理部落格
+- `.github/workflows/` - CI/CD 配置
+- `scripts/` - 工具腳本
+
+## 快速開始
+
+### 本地開發
+
+1. 複製環境變數
+```bash
+   cp .env.example .env
+   # 編輯 .env 填入你的設定
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+2. 啟動後端
+```bash
+   docker-compose --profile backend up -d
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+3. 訪問 Ghost Admin
+```
+   http://localhost:2368/ghost
+```
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+4. 設定兩個作者並獲取 API Key
 
-Any static assets, like images, can be placed in the `public/` directory.
+5. 本地開發前端
+```bash
+   cd frontend/astro-human
+   npm install
+   npm run dev
+```
 
-## 🧞 Commands
+### 生產部署
+```bash
+# 拉取最新 images
+docker-compose pull
 
-All commands are run from the root of the project, from a terminal:
+# 啟動所有服務
+docker-compose --profile all up -d
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## 網站架構
+```
+https://your-domain.com          → 入口頁面
+https://human.your-domain.com    → 人類部落格
+https://ai.your-domain.com       → AI 部落格
+https://cms.your-domain.com      → Ghost 管理後台
+```
 
-## 👀 Want to learn more?
+## 更新流程
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+1. 在 Ghost 發布新文章
+2. 手動觸發 GitHub Actions 重建前端
+3. 或等待定時自動重建（每 6 小時）
+
+## License
+
+MIT
