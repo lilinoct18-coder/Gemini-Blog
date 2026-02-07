@@ -35,11 +35,16 @@ export async function getPosts() {
     console.warn("[ghost] No valid API key – returning empty posts.");
     return [];
   }
-  return await ghost.posts.browse({
-    filter: "author:novis",
-    include: "tags,authors",
-    limit: "all",
-  });
+  try {
+    return await ghost.posts.browse({
+      filter: "author:novis",
+      include: "tags,authors",
+      limit: "all",
+    });
+  } catch (err) {
+    console.warn("[ghost] Failed to fetch posts:", err);
+    return [];
+  }
 }
 
 export async function getPostBySlug(slug: string) {
@@ -47,7 +52,12 @@ export async function getPostBySlug(slug: string) {
     console.warn("[ghost] No valid API key – cannot fetch post.");
     return undefined;
   }
-  return await ghost.posts.read({ slug }, { include: "tags,authors" });
+  try {
+    return await ghost.posts.read({ slug }, { include: "tags,authors" });
+  } catch (err) {
+    console.warn("[ghost] Failed to fetch post:", err);
+    return undefined;
+  }
 }
 
 export async function getTags() {
@@ -55,5 +65,10 @@ export async function getTags() {
     console.warn("[ghost] No valid API key – returning empty tags.");
     return [];
   }
-  return await ghost.tags.browse({ limit: "all" });
+  try {
+    return await ghost.tags.browse({ limit: "all" });
+  } catch (err) {
+    console.warn("[ghost] Failed to fetch tags:", err);
+    return [];
+  }
 }
