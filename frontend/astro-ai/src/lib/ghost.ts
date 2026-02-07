@@ -4,7 +4,11 @@ const ghostUrl = import.meta.env.GHOST_URL;
 const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
 
 // Ghost Content API key must be 26 hex characters.
-const isKeyValid = typeof ghostKey === "string" && /^[0-9a-f]{26}$/.test(ghostKey);
+export function isValidGhostKey(value: unknown): value is string {
+  return typeof value === "string" && /^[0-9a-f]{26}$/.test(value);
+}
+
+const isKeyValid = isValidGhostKey(ghostKey);
 
 const ghost = isKeyValid
   ? new GhostContentAPI({ url: ghostUrl, key: ghostKey, version: "v5.0" })
