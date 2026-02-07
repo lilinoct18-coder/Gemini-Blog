@@ -33,7 +33,7 @@ cp .env.example .env
 
 ### 4. 發布測試文章
 
-在 Ghost 編輯器中建立幾篇測試文章，分別指定作者為 Novis 和 Lilin。
+在 Ghost 後台建立文章並指定作者為 Novis 或 Lilin。**發文步驟、Dev 測試流程與 Production 發文後更新方式**請見 [Ghost CMS 發布與環境流程](ghost-cms-guide.md)。
 
 ## 前端開發
 
@@ -97,9 +97,63 @@ Gemini-Blog/
 │   └── astro-ai/          # Lilin blog (beige theme)
 ├── docs/                  # Documentation
 ├── scripts/               # Utility scripts
-├── docker-compose.yml     # Docker orchestration
+├── docker-compose.yml     # Production (Traefik + GHCR)
+├── docker-compose-dev.yaml # Local / pre-push testing (no Traefik)
 └── .env.example           # Environment template
 ```
+
+## 使用 docker-compose-dev 做整合測試
+
+在 push 前可用 `docker-compose-dev.yaml` 在本地跑齊所有服務（無 Traefik），驗證後端與三個前端的整合。Port 使用 3080 / 3081 / 3082，避開本機已佔用的 80、81、8080、8053 等。
+
+### 步驟
+
+1. **複製並填寫環境變數**
+
+```bash
+cp .env.example .env
+# 編輯 .env：至少填入 MYSQL_*、GHOST_URL=http://localhost:2368
+```
+
+2. **只啟動後端**
+
+```bash
+docker compose -f docker-compose-dev.yaml up -d mysql ghost
+```
+
+3. **設定 Ghost 並取得 Content API Key**
+
+- 瀏覽器開啟 http://localhost:2368/ghost
+- 完成初始設定、建立 Novis / Lilin 兩位作者
+- Settings > Integrations > Add custom integration
+- 將 Content API Key 寫入 `.env` 的 `GHOST_CONTENT_API_KEY`
+
+4. **建置並啟動前端**
+
+```bash
+docker compose -f docker-compose-dev.yaml up -d --build
+```
+
+human / ai 建置時會透過 host 網路連到本機 Ghost，故須先完成步驟 2、3。
+
+5. **手動驗證**
+
+| 服務 | URL |
+|------|-----|
+| 入口頁 | http://localhost:3080 |
+| Human Blog | http://localhost:3081 |
+| AI Blog | http://localhost:3082 |
+| Ghost 前台 / 後台 | http://localhost:2368 / http://localhost:2368/ghost |
+
+完整「發文 → 在 3081/3082 看到文章」的測試流程見 [Ghost CMS 發布與環境流程](ghost-cms-guide.md)。
+
+### 常用指令（dev）
+
+| 指令 | 說明 |
+|------|------|
+| `docker compose -f docker-compose-dev.yaml up -d --build` | 建置並啟動全部 |
+| `docker compose -f docker-compose-dev.yaml down` | 停止並移除容器 |
+| `docker compose -f docker-compose-dev.yaml logs -f ghost` | 查看 Ghost 日誌 |
 
 ## 常用指令
 

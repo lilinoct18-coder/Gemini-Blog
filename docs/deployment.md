@@ -1,5 +1,12 @@
 # 生產部署指南
 
+## 啟動順序：可以先全部 up 嗎？
+
+- **首次部署**：**不行**。必須先單獨啟動 Ghost（後端），在 Ghost 裡完成設定並取得 Content API Key、寫入 GitHub Secrets 後，觸發前端建置，再啟動前端。原因：Human / AI 的 Docker image 是在 **CI 建置時** 用 API Key 向 Ghost 拉取文章並打成靜態站，所以 image 必須在「Ghost 已上線且已有 API Key」之後才能建出有內容的版本。
+- **日常重啟（已做過首次設定）**：**可以**。直接執行 `docker compose --profile all up -d` 就會把 MySQL、Ghost、Landing、Human、AI 一次全部拉起來，無須先只開後端。前端容器只是拉現成 image 跑靜態檔，與 Ghost 沒有啟動順序依賴。
+
+底下「部署步驟」為首次部署的完整流程；之後重開機或更新服務，用文末的「拉取最新 image」或直接 `up -d` 即可。
+
 ## 前置條件
 
 - Home Server 上已安裝 Docker 和 Docker Compose
@@ -67,13 +74,19 @@ docker compose --profile backend up -d
 
 ### 8. 啟動所有服務
 
+首次建置完成後，在伺服器上執行：
+
 ```bash
 docker compose --profile all up -d
 ```
 
+之後每次重開機或要「全部一起起來」，也是這條指令即可（見上方「啟動順序」）。
+
 ## 更新流程
 
 ### 發布新文章後更新前端
+
+在 Ghost 後台發文後，需觸發前端重建才會在 Human / AI 站點顯示。發文操作與作者對應說明見 [Ghost CMS 發布與環境流程](ghost-cms-guide.md)。
 
 ```bash
 # 手動觸發重建
