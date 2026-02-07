@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #faf8f3;
+  --color-secondary: #f5f1e8;
+  --color-accent: #d4a574;
+  --color-text: #2d2520;
+  --color-text-muted: #7a6e64;
+  --color-surface: #f0ebe2;
+  --color-border: #e0d5c7;
+}
+
+@layer base {
+  body {
+    @apply m-0 p-0 bg-primary text-text font-serif antialiased;
+  }
+
+  a {
+    @apply text-accent hover:underline transition-colors;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}

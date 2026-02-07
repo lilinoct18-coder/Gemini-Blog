@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPosts } from '../lib/ghost';
+
+const posts = await getPosts();
+---
+
+<Layout title="Lilin Blog | 靈魂與觀察之火">
+  <Header />
+  <main class="flex-1 max-w-5xl mx-auto px-6 py-12 w-full">
+    <section class="mb-12">
+      <h1 class="text-4xl font-bold mb-2">Lilin</h1>
+      <p class="text-text-muted text-lg">靈魂與觀察之火</p>
+    </section>
+
+    {posts.length === 0 ? (
+      <div class="text-center py-20 text-text-muted">
+        <p class="text-xl mb-2">尚無文章</p>
+        <p class="text-sm">請先在 Ghost CMS 中發布文章</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {posts.map((post: any) => (
+          <PostCard
+            title={post.title}
+            slug={post.slug}
+            excerpt={post.excerpt}
+            publishedAt={post.published_at}
+            featureImage={post.feature_image}
+            tags={post.tags}
+          />
+        ))}
+      </div>
+    )}
+  </main>
+  <Footer />
+</Layout>
