@@ -71,12 +71,21 @@ jobs:
 
       - name: Wait for services
         run: |
-          for i in {1..30}; do
-            if curl -sf http://localhost:3080 >/dev/null; then
+          for i in {1..60}; do
+            if curl -sf http://localhost:3080 >/dev/null && \
+               curl -sf http://localhost:3081 >/dev/null && \
+               curl -sf http://localhost:3082 >/dev/null && \
+               curl -sf http://localhost:2368 >/dev/null; then
+              echo "All services are up"
               break
             fi
+            echo "Waiting for services... (attempt $i)"
             sleep 5
           done
+          curl -sf http://localhost:3080 >/dev/null || (echo "Landing (3080) not ready" && exit 1)
+          curl -sf http://localhost:3081 >/dev/null || (echo "Human (3081) not ready" && exit 1)
+          curl -sf http://localhost:3082 >/dev/null || (echo "AI (3082) not ready" && exit 1)
+          curl -sf http://localhost:2368 >/dev/null || (echo "Ghost (2368) not ready" && exit 1)
 
       - name: Install E2E dependencies
         run: npm ci
