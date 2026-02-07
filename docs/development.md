@@ -46,6 +46,8 @@ npm run dev
 # 訪問 http://localhost:4321
 ```
 
+入口頁左側區塊點擊會連到 Human Blog（astro-human）、右側會連到 AI Blog（astro-ai）。若同時開多站開發，請設定 `PUBLIC_HUMAN_BLOG_URL` / `PUBLIC_AI_BLOG_URL`（見下方注意）。
+
 ### Human Blog
 
 ```bash
@@ -83,6 +85,11 @@ npm run dev
 > # Terminal 3
 > cd frontend/astro-ai && npm run dev -- --port 4323
 > ```
+>
+> 若要讓 landing 頁面左/右區塊的連結正確連到 human 與 ai 站點，可在 `frontend/astro-landing` 建立 `.env` 並設定（或使用預設的 localhost:4322 / 4323）：
+> - `PUBLIC_HUMAN_BLOG_URL`：Human Blog 完整 URL（例如 `http://localhost:4322`）
+> - `PUBLIC_AI_BLOG_URL`：AI Blog 完整 URL（例如 `http://localhost:4323`）
+> 參考 `frontend/astro-landing/.env.example`。
 
 ## 專案結構
 

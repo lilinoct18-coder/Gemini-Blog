@@ -64,6 +64,8 @@ docker compose --profile backend up -d
 - `GHOST_URL`: Ghost CMS 的公開 URL（如 `https://cms.your-domain.com`）
 - `GHOST_CONTENT_API_KEY`: 步驟 5 取得的 Content API Key
 
+（選用）在 **Variables** 中新增 `DOMAIN`（例如 `your-domain.com`），Build Landing Page workflow 會以此產生 `https://human.${DOMAIN}` 與 `https://ai.${DOMAIN}` 並傳入建置，讓入口頁左/右區塊的連結正確指向 Human 與 AI 站點。未設定時會使用預設的 localhost URL。
+
 ### 7. 觸發首次建置
 
 ```bash
