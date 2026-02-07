@@ -1,5 +1,21 @@
 import GhostContentAPI from "@tryghost/content-api";
 
+/** Minimal shape for Ghost post used in list and detail views */
+export interface GhostPost {
+  slug: string;
+  title?: string;
+  excerpt?: string;
+  published_at?: string;
+  feature_image?: string | null;
+  tags?: unknown[];
+  html?: string;
+  primary_author?: {
+    name?: string;
+    bio?: string;
+    profile_image?: string | null;
+  };
+}
+
 const ghostUrl = import.meta.env.GHOST_URL;
 const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
 

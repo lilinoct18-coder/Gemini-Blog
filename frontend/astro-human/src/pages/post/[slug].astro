@@ -1,11 +1,11 @@
 ---
-import PostLayout from '../../layouts/PostLayout.astro';
-import AuthorInfo from '../../components/AuthorInfo.astro';
-import { getPosts, getPostBySlug } from '../../lib/ghost';
+import PostLayout from "../../layouts/PostLayout.astro";
+import AuthorInfo from "../../components/AuthorInfo.astro";
+import { getPosts, getPostBySlug, type GhostPost } from "../../lib/ghost";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
-  return posts.map((post: any) => ({
+  return posts.map((post: GhostPost) => ({
     params: { slug: post.slug },
   }));
 }
