@@ -50,3 +50,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            PUBLIC_HUMAN_BLOG_URL=${{ vars.DOMAIN != '' && format('https://human.{0}', vars.DOMAIN) || '' }}
+            PUBLIC_AI_BLOG_URL=${{ vars.DOMAIN != '' && format('https://ai.{0}', vars.DOMAIN) || '' }}

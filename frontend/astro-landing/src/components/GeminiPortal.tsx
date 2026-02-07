@@ -3,6 +3,17 @@ import { motion, useTime, useTransform, useSpring } from "framer-motion";
 import WaveDivider from "./WaveDivider";
 import { portalConfig } from "./portal-config";
 
+const humanBlogUrl =
+  typeof import.meta.env.PUBLIC_HUMAN_BLOG_URL === "string" &&
+  import.meta.env.PUBLIC_HUMAN_BLOG_URL
+    ? import.meta.env.PUBLIC_HUMAN_BLOG_URL
+    : "http://localhost:4322";
+const aiBlogUrl =
+  typeof import.meta.env.PUBLIC_AI_BLOG_URL === "string" &&
+  import.meta.env.PUBLIC_AI_BLOG_URL
+    ? import.meta.env.PUBLIC_AI_BLOG_URL
+    : "http://localhost:4323";
+
 const GeminiPortal: React.FC = () => {
   const [targetPos, setTargetPos] = useState(portalConfig.content.defaultPos);
   const [moveDirection, setMoveDirection] = useState<"right" | "left">("right");
@@ -120,22 +131,30 @@ const GeminiPortal: React.FC = () => {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_25%_center,_var(--color-novis-accent)_0%,_transparent_70%)]" />
       </motion.div>
 
-      {/* Hover Detectors */}
-      <div
-        className="absolute top-0 left-0 h-full z-30 cursor-pointer"
+      {/* Hover Detectors / Links: left → Human Blog, right → AI Blog */}
+      <a
+        href={humanBlogUrl}
+        target="_self"
+        rel="noopener noreferrer"
+        className="absolute top-0 left-0 h-full z-30 cursor-pointer block"
         style={{ width: `${targetPos * 100}%` }}
         onMouseEnter={() => {
           setMoveDirection("right");
           setTargetPos(content.novis.activePos);
         }}
+        aria-label="前往 Human 部落格"
       />
-      <div
-        className="absolute top-0 right-0 h-full z-30 cursor-pointer"
+      <a
+        href={aiBlogUrl}
+        target="_self"
+        rel="noopener noreferrer"
+        className="absolute top-0 right-0 h-full z-30 cursor-pointer block"
         style={{ width: `${(1 - targetPos) * 100}%` }}
         onMouseEnter={() => {
           setMoveDirection("left");
           setTargetPos(content.lilin.activePos);
         }}
+        aria-label="前往 AI 部落格"
       />
 
       <WaveDivider
