@@ -66,26 +66,55 @@ jobs:
           GITHUB_OWNER=example
           EOF
 
-      - name: Build and start dev stack
-        run: docker compose -f docker-compose-dev.yaml up -d --build
+      - name: Build images
+        run: docker compose -f docker-compose-dev.yaml build
 
-      - name: Wait for services
+      - name: Start backend (MySQL + Ghost)
+        run: docker compose -f docker-compose-dev.yaml up -d mysql ghost
+
+      - name: Wait for Ghost
         run: |
-          for i in {1..60}; do
+          echo "Waiting for Ghost (2368) to be ready..."
+          for i in $(seq 1 48); do
+            if curl -sf http://localhost:2368 >/dev/null; then
+              echo "Ghost is up"
+              break
+            fi
+            echo "  attempt $i/48..."
+            sleep 5
+          done
+          curl -sf http://localhost:2368 >/dev/null || (echo "Ghost (2368) not ready" && exit 1)
+
+      - name: Start frontend (landing + human + ai)
+        run: docker compose -f docker-compose-dev.yaml up -d landing human ai
+
+      - name: Wait for all services
+        run: |
+          echo "Waiting for 3080, 3081, 3082..."
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:3080 >/dev/null && \
                curl -sf http://localhost:3081 >/dev/null && \
-               curl -sf http://localhost:3082 >/dev/null && \
-               curl -sf http://localhost:2368 >/dev/null; then
+               curl -sf http://localhost:3082 >/dev/null; then
               echo "All services are up"
               break
             fi
-            echo "Waiting for services... (attempt $i)"
+            echo "  attempt $i/60..."
             sleep 5
           done
           curl -sf http://localhost:3080 >/dev/null || (echo "Landing (3080) not ready" && exit 1)
           curl -sf http://localhost:3081 >/dev/null || (echo "Human (3081) not ready" && exit 1)
           curl -sf http://localhost:3082 >/dev/null || (echo "AI (3082) not ready" && exit 1)
-          curl -sf http://localhost:2368 >/dev/null || (echo "Ghost (2368) not ready" && exit 1)
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker-compose-dev.yaml ps -a
+          echo "--- ghost logs ---"
+          docker compose -f docker-compose-dev.yaml logs ghost || true
+          echo "--- human logs ---"
+          docker compose -f docker-compose-dev.yaml logs human || true
+          echo "--- ai logs ---"
+          docker compose -f docker-compose-dev.yaml logs ai || true
 
       - name: Install E2E dependencies
         run: npm ci
