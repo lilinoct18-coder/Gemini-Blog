@@ -1,6 +1,10 @@
-# Local / pre-push testing: no Traefik, all services from local build.
-# Ports 3080/3081/3082 avoid conflicts with 80, 81, 8080, 8053, etc.
-# Usage: see docs/development.md "使用 docker-compose-dev 做整合測試"
+# Local / pre-push testing: all services in one compose, no Traefik.
+# Usage: docker compose -f docker-compose-dev.yaml up -d
+#
+# Access:
+#   Frontend:  http://localhost:3080
+#   Ghost CMS: http://localhost:3080/cms  (via Nginx proxy)
+#   Ghost API: http://localhost:2368      (direct, for debugging)
 
 services:
   mysql:
@@ -28,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      url: http://localhost:2368
+      url: http://localhost:3080/cms
       database__client: mysql2
       database__connection__host: mysql
       database__connection__port: 3306
@@ -49,45 +53,19 @@ services:
     networks:
       - backend
 
-  landing:
+  frontend:
     build:
-      context: frontend/astro-landing
+      context: frontend
       dockerfile: Dockerfile
+      args:
+        GHOST_URL: http://ghost:2368
+        GHOST_CONTENT_API_KEY: ${GHOST_CONTENT_API_KEY}
     restart: unless-stopped
+    depends_on:
+      ghost:
+        condition: service_healthy
     ports:
       - "3080:80"
-    networks:
-      - backend
-
-  human:
-    build:
-      context: frontend/astro-human
-      dockerfile: Dockerfile.dev
-    depends_on:
-      ghost:
-        condition: service_healthy
-    environment:
-      GHOST_URL: http://ghost:2368
-      GHOST_CONTENT_API_KEY: ${GHOST_CONTENT_API_KEY}
-    restart: unless-stopped
-    ports:
-      - "3081:3000"
-    networks:
-      - backend
-
-  ai:
-    build:
-      context: frontend/astro-ai
-      dockerfile: Dockerfile.dev
-    depends_on:
-      ghost:
-        condition: service_healthy
-    environment:
-      GHOST_URL: http://ghost:2368
-      GHOST_CONTENT_API_KEY: ${GHOST_CONTENT_API_KEY}
-    restart: unless-stopped
-    ports:
-      - "3082:3000"
     networks:
       - backend
 
