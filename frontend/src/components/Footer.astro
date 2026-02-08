@@ -1,0 +1,42 @@
+---
+interface Props {
+  author: "novis" | "lilin";
+}
+
+const { author } = Astro.props;
+const year = new Date().getFullYear();
+
+const isNovis = author === "novis";
+const name = isNovis ? "Novis" : "Lilin";
+
+const borderClass = isNovis ? "border-novis-border" : "border-lilin-border";
+const textClass = isNovis ? "text-novis-text-muted" : "text-lilin-text-muted";
+const accentClass = isNovis ? "text-novis-accent" : "text-lilin-accent";
+---
+
+<footer class:list={["border-t py-8 mt-auto", borderClass]}>
+  <div
+    class:list={[
+      "max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm",
+      textClass,
+    ]}
+  >
+    <p>&copy; {year} {name}. All rights reserved.</p>
+    <p>
+      Powered by
+      <a
+        href="https://ghost.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        class:list={[accentClass, "hover:underline"]}>Ghost</a
+      >
+      &
+      <a
+        href="https://astro.build"
+        target="_blank"
+        rel="noopener noreferrer"
+        class:list={[accentClass, "hover:underline"]}>Astro</a
+      >
+    </p>
+  </div>
+</footer>

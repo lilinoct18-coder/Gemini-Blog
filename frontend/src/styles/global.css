@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Novis theme (deep blue) */
+  --color-novis-primary: #0a1628;
+  --color-novis-secondary: #1a2744;
+  --color-novis-accent: #3b82f6;
+  --color-novis-text: #e0e7ff;
+  --color-novis-text-muted: #94a3b8;
+  --color-novis-surface: #0f1d32;
+  --color-novis-border: #1e3a5f;
+
+  /* Lilin theme (warm cream) */
+  --color-lilin-primary: #faf8f3;
+  --color-lilin-secondary: #f5f1e8;
+  --color-lilin-accent: #d4a574;
+  --color-lilin-text: #2d2520;
+  --color-lilin-text-muted: #7a6e64;
+  --color-lilin-surface: #f0ebe2;
+  --color-lilin-border: #e0d5c7;
+}
+
+@layer base {
+  body {
+    @apply m-0 p-0 font-sans antialiased;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold tracking-tight;
+  }
+}

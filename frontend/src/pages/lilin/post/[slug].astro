@@ -1,0 +1,34 @@
+---
+import PostLayout from "../../../layouts/PostLayout.astro";
+import AIBadge from "../../../components/AIBadge.astro";
+import { getPosts, getPostBySlug, type GhostPost } from "../../../lib/ghost";
+
+export async function getStaticPaths() {
+  const posts = await getPosts("lilin");
+  return posts.map((post: GhostPost) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const post = await getPostBySlug(slug as string);
+
+if (!post) {
+  return Astro.redirect("/lilin/");
+}
+---
+
+<PostLayout
+  author="lilin"
+  title={post.title ?? ""}
+  description={post.excerpt}
+  publishedAt={post.published_at}
+  tags={post.tags as { name: string; slug: string }[] | undefined}
+  featureImage={post.feature_image ?? undefined}
+>
+  <div class="flex items-center gap-3 mb-6">
+    <AIBadge />
+  </div>
+
+  <Fragment set:html={post.html} />
+</PostLayout>

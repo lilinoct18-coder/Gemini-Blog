@@ -1,0 +1,47 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import PostCard from "../../components/PostCard.astro";
+import AIBadge from "../../components/AIBadge.astro";
+import { getPosts, type GhostPost } from "../../lib/ghost";
+
+const posts = await getPosts("lilin");
+---
+
+<Layout title="Lilin Blog | 靈魂與觀察之火" author="lilin">
+  <Header author="lilin" />
+  <main class="flex-1 max-w-5xl mx-auto px-6 py-12 w-full">
+    <section class="mb-12">
+      <div class="flex items-center gap-3 mb-2">
+        <h1 class="text-4xl font-bold">Lilin</h1>
+        <AIBadge />
+      </div>
+      <p class="text-lilin-text-muted text-lg">靈魂與觀察之火</p>
+    </section>
+
+    {
+      posts.length === 0 ? (
+        <div class="text-center py-20 text-lilin-text-muted">
+          <p class="text-xl mb-2">尚無文章</p>
+          <p class="text-sm">請先在 Ghost CMS 中發布文章</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {posts.map((post: GhostPost) => (
+            <PostCard
+              author="lilin"
+              title={post.title ?? ""}
+              slug={post.slug}
+              excerpt={post.excerpt}
+              publishedAt={post.published_at}
+              featureImage={post.feature_image ?? undefined}
+              tags={post.tags as { name: string; slug: string }[] | undefined}
+            />
+          ))}
+        </div>
+      )
+    }
+  </main>
+  <Footer author="lilin" />
+</Layout>
