@@ -5,16 +5,16 @@
 ## 架構
 
 - **Ghost CMS**: 使用官方 `ghost:5-alpine` Docker image
-- **MySQL 8.0**: Ghost 的資料庫後端
+- **MySQL 8.0**: Ghost 的資料庫後端（部署在 homeserver 的 db compose stack）
 - **Content API**: 前端在建置時透過 Ghost Content API 拉取文章
 
 ## 設定步驟
 
-### 1. 啟動後端
+### 1. 啟動後端（本地開發）
 
 ```bash
 # 在專案根目錄
-docker-compose --profile backend up -d
+docker compose -f docker-compose-dev.yaml up -d mysql ghost
 ```
 
 ### 2. 初始化 Ghost
@@ -30,8 +30,11 @@ docker-compose --profile backend up -d
 
 ### 3. 發布文章
 
-在 Ghost 編輯器中撰寫文章時，選擇對應的作者（Novis 或 Lilin），前端會根據作者自動分流顯示。
+在 Ghost 編輯器中撰寫文章時，選擇對應的作者（Novis 或 Lilin），前端會根據作者自動分流顯示到 `/novis/` 或 `/lilin/` 路徑下。
 
 ## 配置
 
-Ghost 的配置主要透過 `docker-compose.yml` 中的環境變數控制。如需自訂配置，可編輯 `ghost/config.production.json`。
+Ghost 的配置主要透過 docker-compose 中的環境變數控制。
+
+- **本地開發**：見 `docker-compose-dev.yaml`
+- **生產部署**：見 homeserver `/opt/docker` repo 的 `compose/apps/ghost.yml`
