@@ -32,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      url: http://localhost:3080/cms
+      url: http://localhost:2368
       database__client: mysql2
       database__connection__host: mysql
       database__connection__port: 3306
