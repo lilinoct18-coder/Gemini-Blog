@@ -1,0 +1,31 @@
+---
+interface Props {
+  name?: string;
+  bio?: string;
+  profileImage?: string;
+}
+
+const { name = "Novis", bio = "理性與技術之海", profileImage } = Astro.props;
+---
+
+<div
+  class="flex items-center gap-4 p-4 bg-surface rounded-lg border border-border"
+>
+  {
+    profileImage ? (
+      <img
+        src={profileImage}
+        alt={name}
+        class="w-12 h-12 rounded-full object-cover"
+      />
+    ) : (
+      <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-lg">
+        {name.charAt(0)}
+      </div>
+    )
+  }
+  <div>
+    <p class="font-bold text-text">{name}</p>
+    {bio && <p class="text-text-muted text-sm">{bio}</p>}
+  </div>
+</div>
