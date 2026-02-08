@@ -1,10 +1,10 @@
-name: Build AI Blog
+name: Build Frontend
 
 on:
   push:
     branches: [main]
     paths:
-      - "frontend/astro-ai/**"
+      - "frontend/**"
   schedule:
     # Rebuild every 6 hours to pick up new Ghost posts
     - cron: "0 */6 * * *"
@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/gemini-ai
+  IMAGE_NAME: ${{ github.repository_owner }}/gemini-blog
 
 jobs:
   build-and-push:
@@ -47,7 +47,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: frontend/astro-ai
+          context: frontend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

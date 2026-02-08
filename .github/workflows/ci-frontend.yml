@@ -5,11 +5,8 @@ on:
 
 jobs:
   frontend-checks:
-    name: Frontend checks (${{ matrix.app }})
+    name: Frontend checks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: [astro-landing, astro-human, astro-ai]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,23 +18,23 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: frontend/${{ matrix.app }}
+        working-directory: frontend
 
       - name: Type check
         run: npm run check
-        working-directory: frontend/${{ matrix.app }}
+        working-directory: frontend
 
       - name: Lint
         run: npm run lint
-        working-directory: frontend/${{ matrix.app }}
+        working-directory: frontend
 
       - name: Format check
         run: npm run format:check
-        working-directory: frontend/${{ matrix.app }}
+        working-directory: frontend
 
       - name: Unit tests
         run: npm run test
-        working-directory: frontend/${{ matrix.app }}
+        working-directory: frontend
 
   e2e:
     name: E2E (Playwright)
@@ -62,12 +59,10 @@ jobs:
           MYSQL_DATABASE=ghost
           MYSQL_USER=ghost
           MYSQL_PASSWORD=devpass123
-          DOMAIN=example.com
-          GITHUB_OWNER=example
           EOF
 
-      - name: Build images
-        run: docker compose -f docker-compose-dev.yaml build
+      - name: Build frontend image
+        run: docker compose -f docker-compose-dev.yaml build frontend
 
       - name: Start backend (MySQL + Ghost)
         run: docker compose -f docker-compose-dev.yaml up -d mysql ghost
@@ -85,25 +80,21 @@ jobs:
           done
           curl -sf http://localhost:2368 >/dev/null || (echo "Ghost (2368) not ready" && exit 1)
 
-      - name: Start frontend (landing + human + ai)
-        run: docker compose -f docker-compose-dev.yaml up -d landing human ai
+      - name: Start frontend
+        run: docker compose -f docker-compose-dev.yaml up -d frontend
 
-      - name: Wait for all services
+      - name: Wait for frontend
         run: |
-          echo "Waiting for 3080, 3081, 3082..."
+          echo "Waiting for frontend (3080)..."
           for i in $(seq 1 60); do
-            if curl -sf http://localhost:3080 >/dev/null && \
-               curl -sf http://localhost:3081 >/dev/null && \
-               curl -sf http://localhost:3082 >/dev/null; then
-              echo "All services are up"
+            if curl -sf http://localhost:3080 >/dev/null; then
+              echo "Frontend is up"
               break
             fi
             echo "  attempt $i/60..."
             sleep 5
           done
-          curl -sf http://localhost:3080 >/dev/null || (echo "Landing (3080) not ready" && exit 1)
-          curl -sf http://localhost:3081 >/dev/null || (echo "Human (3081) not ready" && exit 1)
-          curl -sf http://localhost:3082 >/dev/null || (echo "AI (3082) not ready" && exit 1)
+          curl -sf http://localhost:3080 >/dev/null || (echo "Frontend (3080) not ready" && exit 1)
 
       - name: Show container logs on failure
         if: failure()
@@ -111,10 +102,8 @@ jobs:
           docker compose -f docker-compose-dev.yaml ps -a
           echo "--- ghost logs ---"
           docker compose -f docker-compose-dev.yaml logs ghost || true
-          echo "--- human logs ---"
-          docker compose -f docker-compose-dev.yaml logs human || true
-          echo "--- ai logs ---"
-          docker compose -f docker-compose-dev.yaml logs ai || true
+          echo "--- frontend logs ---"
+          docker compose -f docker-compose-dev.yaml logs frontend || true
 
       - name: Install E2E dependencies
         run: npm ci
