@@ -37,21 +37,8 @@ cp .env.example .env
 
 ## 前端開發
 
-### Landing Page
-
 ```bash
-cd frontend/astro-landing
-npm install
-npm run dev
-# 訪問 http://localhost:4321
-```
-
-入口頁左側區塊點擊會連到 Human Blog（astro-human）、右側會連到 AI Blog（astro-ai）。若同時開多站開發，請設定 `PUBLIC_HUMAN_BLOG_URL` / `PUBLIC_AI_BLOG_URL`（見下方注意）。
-
-### Human Blog
-
-```bash
-cd frontend/astro-human
+cd frontend
 npm install
 
 # 建立 .env 檔案
@@ -62,56 +49,42 @@ npm run dev
 # 訪問 http://localhost:4321
 ```
 
-### AI Blog
+所有頁面都在同一個 Astro app 中：
 
-```bash
-cd frontend/astro-ai
-npm install
-
-# 建立 .env 檔案
-echo "GHOST_URL=http://localhost:2368" > .env
-echo "GHOST_CONTENT_API_KEY=your_key_here" >> .env
-
-npm run dev
-# 訪問 http://localhost:4321
-```
-
-> 注意：同時開發多個站點時，需要指定不同的 port：
-> ```bash
-> # Terminal 1
-> cd frontend/astro-landing && npm run dev -- --port 4321
-> # Terminal 2
-> cd frontend/astro-human && npm run dev -- --port 4322
-> # Terminal 3
-> cd frontend/astro-ai && npm run dev -- --port 4323
-> ```
->
-> 若要讓 landing 頁面左/右區塊的連結正確連到 human 與 ai 站點，可在 `frontend/astro-landing` 建立 `.env` 並設定（或使用預設的 localhost:4322 / 4323）：
-> - `PUBLIC_HUMAN_BLOG_URL`：Human Blog 完整 URL（例如 `http://localhost:4322`）
-> - `PUBLIC_AI_BLOG_URL`：AI Blog 完整 URL（例如 `http://localhost:4323`）
-> 參考 `frontend/astro-landing/.env.example`。
+| 路徑 | 內容 |
+|------|------|
+| `http://localhost:4321/` | Landing 門戶 |
+| `http://localhost:4321/novis/` | Novis 文章列表 |
+| `http://localhost:4321/lilin/` | Lilin 文章列表 |
 
 ## 專案結構
 
 ```
 Gemini-Blog/
 ├── .github/workflows/     # CI/CD workflows
-├── backend/               # Ghost CMS configuration
-│   └── ghost/
-├── frontend/
-│   ├── astro-landing/     # Entry portal site
-│   ├── astro-human/       # Novis blog (dark blue theme)
-│   └── astro-ai/          # Lilin blog (beige theme)
-├── docs/                  # Documentation
-├── scripts/               # Utility scripts
-├── docker-compose.yml     # Production (Traefik + GHCR)
-├── docker-compose-dev.yaml # Local / pre-push testing (no Traefik)
-└── .env.example           # Environment template
+├── frontend/              # 單一 Astro 應用程式
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── index.astro         # Landing 門戶
+│   │   │   ├── novis/              # Novis 部落格頁面
+│   │   │   └── lilin/              # Lilin 部落格頁面
+│   │   ├── components/             # 共用元件
+│   │   ├── layouts/                # 版型
+│   │   ├── lib/                    # Ghost API 客戶端
+│   │   └── styles/                 # 全域樣式
+│   ├── Dockerfile                  # 生產建置（Node -> Nginx）
+│   ├── nginx.conf                  # 靜態檔 + /cms/ 反向代理
+│   └── package.json
+├── e2e/                   # Playwright E2E 測試
+├── docs/                  # 文件
+├── scripts/               # 工具腳本
+├── docker-compose-dev.yaml # 本地整合測試（無 Traefik）
+└── .env.example           # 環境變數範本
 ```
 
 ## 使用 docker-compose-dev 做整合測試
 
-在 push 前可用 `docker-compose-dev.yaml` 在本地跑齊所有服務（無 Traefik），驗證後端與三個前端的整合。Port 使用 3080 / 3081 / 3082，避開本機已佔用的 80、81、8080、8053 等。
+在 push 前可用 `docker-compose-dev.yaml` 在本地跑齊所有服務（無 Traefik），驗證前端與 Ghost 的整合。
 
 ### 步驟
 
@@ -119,7 +92,7 @@ Gemini-Blog/
 
 ```bash
 cp .env.example .env
-# 編輯 .env：至少填入 MYSQL_*、GHOST_URL=http://localhost:2368
+# 編輯 .env：至少填入 MYSQL_*、GHOST_CONTENT_API_KEY
 ```
 
 2. **只啟動後端**
@@ -141,18 +114,15 @@ docker compose -f docker-compose-dev.yaml up -d mysql ghost
 docker compose -f docker-compose-dev.yaml up -d --build
 ```
 
-human / ai 建置時會透過 host 網路連到本機 Ghost，故須先完成步驟 2、3。
-
 5. **手動驗證**
 
 | 服務 | URL |
 |------|-----|
-| 入口頁 | http://localhost:3080 |
-| Human Blog | http://localhost:3081 |
-| AI Blog | http://localhost:3082 |
-| Ghost 前台 / 後台 | http://localhost:2368 / http://localhost:2368/ghost |
-
-完整「發文 → 在 3081/3082 看到文章」的測試流程見 [Ghost CMS 發布與環境流程](ghost-cms-guide.md)。
+| Landing 門戶 | http://localhost:3080 |
+| Novis 部落格 | http://localhost:3080/novis/ |
+| Lilin 部落格 | http://localhost:3080/lilin/ |
+| Ghost CMS | http://localhost:3080/cms/ |
+| Ghost API（直連） | http://localhost:2368 |
 
 ### 常用指令（dev）
 
@@ -164,17 +134,23 @@ human / ai 建置時會透過 host 網路連到本機 Ghost，故須先完成步
 
 ## Testing 與 CI
 
-前端的檢查與 CI 流程（check、lint、format、unit test、E2E）有獨立說明，**建議 push 前在對應前端目錄跑一次檢查**，可減少 PR 上 CI 失敗。
+前端的檢查與 CI 流程（check、lint、format、unit test、E2E）有獨立說明。
 
-- **完整說明**：[Testing 與 CI 指南](testing.md)（含：在哪個目錄跑、各指令在做什麼、E2E 步驟、CI 怎麼看、失敗時怎麼查）
-- **重點**：`npm run check` / `lint` / `test` 等都要在 `frontend/astro-landing`、`frontend/astro-human` 或 `frontend/astro-ai` 底下跑，專案根目錄沒有 `package.json`。
+```bash
+cd frontend
+npm run check       # Astro + TypeScript 型別檢查
+npm run lint        # ESLint
+npm run format:check # Prettier 格式檢查
+npm run test        # Vitest 單元測試
+```
+
+完整說明見 [Testing 與 CI 指南](testing.md)。
 
 ## 常用指令
 
 | 指令 | 說明 |
 |------|------|
-| `docker compose --profile backend up -d` | 啟動 Ghost + MySQL |
-| `docker compose --profile backend down` | 停止後端 |
-| `docker compose --profile all up -d` | 啟動所有服務 |
+| `docker compose -f docker-compose-dev.yaml up -d` | 啟動所有服務 |
+| `docker compose -f docker-compose-dev.yaml down` | 停止所有服務 |
 | `./scripts/backup-db.sh` | 備份資料庫 |
-| `./scripts/rebuild-frontend.sh all` | 觸發前端重建 |
+| `./scripts/rebuild-frontend.sh` | 觸發前端重建 |

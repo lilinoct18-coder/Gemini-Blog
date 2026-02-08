@@ -1,100 +1,223 @@
-# 生產部署指南
+# 部署指南
 
-## 啟動順序：可以先全部 up 嗎？
+## 概觀
 
-- **首次部署**：**不行**。必須先單獨啟動 Ghost（後端），在 Ghost 裡完成設定並取得 Content API Key、寫入 GitHub Secrets 後，觸發前端建置，再啟動前端。原因：Human / AI 的 Docker image 是在 **CI 建置時** 用 API Key 向 Ghost 拉取文章並打成靜態站，所以 image 必須在「Ghost 已上線且已有 API Key」之後才能建出有內容的版本。
-- **日常重啟（已做過首次設定）**：**可以**。直接執行 `docker compose --profile all up -d` 就會把 MySQL、Ghost、Landing、Human、AI 一次全部拉起來，無須先只開後端。前端容器只是拉現成 image 跑靜態檔，與 Ghost 沒有啟動順序依賴。
+本專案產出一個 Docker image（`gemini-blog`），包含：
+- Landing 門戶頁面（`/`）
+- Novis 部落格（`/novis/`）
+- Lilin 部落格（`/lilin/`）
+- Nginx 反向代理至 Ghost CMS（`/cms/`）
 
-底下「部署步驟」為首次部署的完整流程；之後重開機或更新服務，用文末的「拉取最新 image」或直接 `up -d` 即可。
+部署採用分層架構，適合已有 Traefik + Docker 的 homeserver 環境。
 
-## 前置條件
+## 架構
 
-- Home Server 上已安裝 Docker 和 Docker Compose
-- Traefik 反向代理已設定並運行（包含 `proxy` 外部網路）
-- DNS 已設定指向 Home Server：
-  - `your-domain.com` → Landing Page
-  - `human.your-domain.com` → Human Blog
-  - `ai.your-domain.com` → AI Blog
-  - `cms.your-domain.com` → Ghost CMS
-
-## 部署步驟
-
-### 1. 複製專案
-
-```bash
-git clone https://github.com/YOUR_USERNAME/Gemini-Blog.git
-cd Gemini-Blog
+```
+Browser → Traefik (infra) → Astro Frontend (Nginx) → Ghost CMS → MySQL (db)
+                                    ↑                      ↑
+                              t3_proxy network        db_mysql network
+                                    └── gemini_internal ──┘
 ```
 
-### 2. 設定環境變數
+**路徑路由（單一 domain）：**
+
+| 路徑 | 內容 |
+|------|------|
+| `/` | Landing 門戶（Gemini 波浪動畫） |
+| `/novis/` | Novis 文章列表 |
+| `/novis/post/[slug]` | Novis 文章頁面 |
+| `/lilin/` | Lilin 文章列表 |
+| `/lilin/post/[slug]` | Lilin 文章頁面 |
+| `/cms/*` | Ghost CMS 管理後台（OAuth 保護） |
+
+## Repo 職責邊界
+
+- **本 repo**：原始碼 + CI/CD，build Docker image 推到 GHCR
+- **Homeserver /opt/docker repo**：實際部署的 compose 檔案
+
+以下提供 homeserver 端的 compose 參考片段。
+
+---
+
+## Homeserver 設定參考
+
+### 前置條件
+
+1. Docker + Docker Compose 已安裝
+2. Traefik 已在 `docker-compose-infrastructure.yml` 中運行
+3. `t3_proxy` external network 已存在
+4. DNS 已設定指向 homeserver
+
+### 建立 networks
 
 ```bash
-cp .env.example .env
-# 編輯 .env 填入實際的密碼和域名
+# t3_proxy 通常已由 Traefik infra compose 建立
+# 需要新增以下兩個 network：
+docker network create db_mysql
+docker network create gemini_internal
 ```
 
-### 3. 建立 Traefik 外部網路（如尚未建立）
+### 建立 secrets
 
 ```bash
-docker network create proxy
+# 在 /opt/docker/secrets/ 目錄下建立：
+echo "your_mysql_root_password" > /opt/docker/secrets/mysql_root_password
+echo "your_mysql_password" > /opt/docker/secrets/mysql_password
+chmod 600 /opt/docker/secrets/mysql_root_password
+chmod 600 /opt/docker/secrets/mysql_password
 ```
 
-### 4. 啟動後端
+### compose/db/mysql.yml
+
+```yaml
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: ghost
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    volumes:
+      - ${DOCKERDIR}/appdata/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db_mysql
+    secrets:
+      - mysql_root_password
+      - mysql_password
+```
+
+### compose/apps/ghost.yml
+
+```yaml
+services:
+  ghost:
+    container_name: ghost
+    image: ghost:5-alpine
+    restart: unless-stopped
+    environment:
+      url: https://blog.${DOMAINNAME_1}/cms
+      database__client: mysql2
+      database__connection__host: mysql
+      database__connection__port: 3306
+      database__connection__user: ghost
+      database__connection__password__file: /run/secrets/mysql_password
+      database__connection__database: ghost
+      mail__transport: Direct
+    volumes:
+      - ${DOCKERDIR}/appdata/ghost/content:/var/lib/ghost/content
+    networks:
+      - db_mysql
+      - gemini_internal
+    secrets:
+      - mysql_password
+```
+
+### compose/apps/astro.yml
+
+```yaml
+services:
+  astro:
+    container_name: astro
+    image: ghcr.io/${GITHUB_OWNER}/gemini-blog:latest
+    restart: unless-stopped
+    networks:
+      t3_proxy:
+      gemini_internal:
+    labels:
+      - "traefik.enable=true"
+      # 主站 -- 所有路徑
+      - "traefik.http.routers.gemini-rtr.entrypoints=websecure-external"
+      - "traefik.http.routers.gemini-rtr.rule=Host(`blog.${DOMAINNAME_1}`)"
+      - "traefik.http.services.gemini-svc.loadbalancer.server.port=80"
+      # CMS 後台 -- OAuth 保護
+      - "traefik.http.routers.gemini-cms-rtr.entrypoints=websecure-external"
+      - "traefik.http.routers.gemini-cms-rtr.rule=Host(`blog.${DOMAINNAME_1}`) && PathPrefix(`/cms`)"
+      - "traefik.http.routers.gemini-cms-rtr.middlewares=chain-oauth@file"
+      - "traefik.http.routers.gemini-cms-rtr.service=gemini-svc"
+```
+
+### docker-compose-app.yml（include 區段加入）
+
+```yaml
+networks:
+  t3_proxy:
+    external: true
+  db_mysql:
+    external: true
+  gemini_internal:
+    name: gemini_internal
+    driver: bridge
+
+secrets:
+  mysql_password:
+    file: ${DOCKERDIR}/secrets/mysql_password
+  mysql_root_password:
+    file: ${DOCKERDIR}/secrets/mysql_root_password
+
+include:
+  # ... 其他 app ...
+  - compose/apps/astro.yml
+  - compose/apps/ghost.yml
+```
+
+---
+
+## 首次部署流程
+
+### 1. 啟動 MySQL
 
 ```bash
-docker compose --profile backend up -d
+cd /opt/docker
+docker compose -f docker-compose-db.yml up -d mysql
 ```
 
-### 5. 初始化 Ghost
+### 2. 啟動 Ghost
 
 ```bash
-./scripts/init-ghost.sh
+docker compose -f docker-compose-app.yml up -d ghost
 ```
 
-按照提示：
-1. 訪問 `https://cms.your-domain.com/ghost` 建立管理員帳號
+### 3. 初始化 Ghost
+
+1. 訪問 `https://blog.YOUR_DOMAIN/cms/ghost` 建立管理員帳號
 2. 建立 Novis 和 Lilin 兩個作者
 3. 建立 Custom Integration 並取得 Content API Key
-4. 將 API Key 填入 `.env` 和 GitHub Secrets
+4. 將 API Key 設定為 GitHub Secrets：
+   - `GHOST_URL`：Ghost 內部 URL 或公開 URL
+   - `GHOST_CONTENT_API_KEY`：Content API Key
 
-### 6. 設定 GitHub Secrets
-
-在 GitHub repo 的 Settings > Secrets and variables > Actions 中新增：
-
-- `GHOST_URL`: Ghost CMS 的公開 URL（如 `https://cms.your-domain.com`）
-- `GHOST_CONTENT_API_KEY`: 步驟 5 取得的 Content API Key
-
-（選用）在 **Variables** 中新增 `DOMAIN`（例如 `your-domain.com`），Build Landing Page workflow 會以此產生 `https://human.${DOMAIN}` 與 `https://ai.${DOMAIN}` 並傳入建置，讓入口頁左/右區塊的連結正確指向 Human 與 AI 站點。未設定時會使用預設的 localhost URL。
-
-### 7. 觸發首次建置
+### 4. 觸發首次建置
 
 ```bash
-./scripts/rebuild-frontend.sh all
+./scripts/rebuild-frontend.sh
+# 或在 GitHub Actions 頁面手動觸發 "Build Frontend" workflow
 ```
 
-等待 GitHub Actions 完成建置並推送 image 到 GHCR。
+### 5. 啟動前端
 
-### 8. 啟動所有服務
-
-首次建置完成後，在伺服器上執行：
+等待 GitHub Actions 完成建置推送 image 後：
 
 ```bash
-docker compose --profile all up -d
+docker compose -f docker-compose-app.yml up -d astro
 ```
 
-之後每次重開機或要「全部一起起來」，也是這條指令即可（見上方「啟動順序」）。
-
-## 更新流程
+## 日常操作
 
 ### 發布新文章後更新前端
 
-在 Ghost 後台發文後，需觸發前端重建才會在 Human / AI 站點顯示。發文操作與作者對應說明見 [Ghost CMS 發布與環境流程](ghost-cms-guide.md)。
+在 Ghost 後台發文後，需觸發前端重建：
 
 ```bash
-# 手動觸發重建
-./scripts/rebuild-frontend.sh human  # 僅重建 Human Blog
-./scripts/rebuild-frontend.sh ai     # 僅重建 AI Blog
-./scripts/rebuild-frontend.sh all    # 重建全部
+# 手動觸發
+./scripts/rebuild-frontend.sh
 
 # 或等待自動排程（每 6 小時）
 ```
@@ -102,8 +225,8 @@ docker compose --profile all up -d
 ### 拉取最新 image
 
 ```bash
-docker compose --profile all pull
-docker compose --profile all up -d
+docker compose -f docker-compose-app.yml pull astro
+docker compose -f docker-compose-app.yml up -d astro
 ```
 
 ### 備份資料庫
@@ -117,14 +240,19 @@ docker compose --profile all up -d
 ### 檢查服務狀態
 
 ```bash
-docker compose --profile all ps
-docker compose --profile all logs ghost
-docker compose --profile all logs mysql
+docker compose -f docker-compose-app.yml ps
+docker compose -f docker-compose-app.yml logs ghost
+docker compose -f docker-compose-app.yml logs astro
 ```
 
-### 重啟單一服務
+### Ghost CMS 無法存取
+
+確認 Ghost 容器在 `gemini_internal` network 上，且容器名為 `ghost`（Nginx 設定中使用此名稱解析）。
+
+### 前端顯示 502 Bad Gateway（/cms/）
+
+Ghost 容器可能尚未啟動完成。檢查 Ghost 健康狀態：
 
 ```bash
-docker compose restart ghost
-docker compose restart landing
+docker inspect --format='{{.State.Health.Status}}' ghost
 ```

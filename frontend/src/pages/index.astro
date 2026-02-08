@@ -1,0 +1,27 @@
+---
+import GeminiPortal from "../components/GeminiPortal";
+import "../styles/global.css";
+---
+
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Gemini Blog | 雙子門戶</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+        font-family: serif;
+      }
+    </style>
+  </head>
+  <body>
+    <GeminiPortal client:load />
+  </body>
+</html>

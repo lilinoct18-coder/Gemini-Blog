@@ -1,0 +1,39 @@
+---
+import PostLayout from "../../../layouts/PostLayout.astro";
+import AuthorInfo from "../../../components/AuthorInfo.astro";
+import { getPosts, getPostBySlug, type GhostPost } from "../../../lib/ghost";
+
+export async function getStaticPaths() {
+  const posts = await getPosts("novis");
+  return posts.map((post: GhostPost) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const post = await getPostBySlug(slug as string);
+
+if (!post) {
+  return Astro.redirect("/novis/");
+}
+---
+
+<PostLayout
+  author="novis"
+  title={post.title ?? ""}
+  description={post.excerpt}
+  publishedAt={post.published_at}
+  tags={post.tags as { name: string; slug: string }[] | undefined}
+  featureImage={post.feature_image ?? undefined}
+>
+  <Fragment set:html={post.html} />
+
+  <hr class="my-10 border-novis-border" />
+
+  <AuthorInfo
+    author="novis"
+    name={post.primary_author?.name}
+    bio={post.primary_author?.bio}
+    profileImage={post.primary_author?.profile_image ?? undefined}
+  />
+</PostLayout>

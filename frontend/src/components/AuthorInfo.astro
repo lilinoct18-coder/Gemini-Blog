@@ -1,0 +1,54 @@
+---
+interface Props {
+  author: "novis" | "lilin";
+  name?: string;
+  bio?: string;
+  profileImage?: string;
+}
+
+const isNovis = Astro.props.author === "novis";
+const {
+  name = isNovis ? "Novis" : "Lilin",
+  bio = isNovis ? "理性與技術之海" : "靈魂與觀察之火",
+  profileImage,
+} = Astro.props;
+
+const surfaceClass = isNovis ? "bg-novis-surface" : "bg-lilin-surface";
+const borderClass = isNovis ? "border-novis-border" : "border-lilin-border";
+const textClass = isNovis ? "text-novis-text" : "text-lilin-text";
+const mutedClass = isNovis ? "text-novis-text-muted" : "text-lilin-text-muted";
+const accentClass = isNovis
+  ? "bg-novis-accent/20 text-novis-accent"
+  : "bg-lilin-accent/20 text-lilin-accent";
+---
+
+<div
+  class:list={[
+    "flex items-center gap-4 p-4 rounded-lg border",
+    surfaceClass,
+    borderClass,
+  ]}
+>
+  {
+    profileImage ? (
+      <img
+        src={profileImage}
+        alt={name}
+        class="w-12 h-12 rounded-full object-cover"
+      />
+    ) : (
+      <div
+        class:list={[
+          "w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg",
+          accentClass,
+        ]}
+      >
+        {name.charAt(0)}
+      </div>
+    )
+  }
+  <div>
+    <p class:list={["font-bold", textClass]}>{name}</p>
+    {bio && <p class:list={["text-sm", mutedClass]}>{bio}</p>}
+  </div>
+</div>

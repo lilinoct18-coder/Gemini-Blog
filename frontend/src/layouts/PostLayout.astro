@@ -1,0 +1,116 @@
+---
+import Layout from "./Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  author: "novis" | "lilin";
+  title: string;
+  description?: string;
+  publishedAt?: string;
+  tags?: { name: string; slug: string }[];
+  featureImage?: string;
+}
+
+const {
+  author,
+  title,
+  description,
+  publishedAt,
+  tags = [],
+  featureImage,
+} = Astro.props;
+
+const isNovis = author === "novis";
+const blogTitle = isNovis ? "Novis Blog" : "Lilin Blog";
+
+const formattedDate = publishedAt
+  ? new Date(publishedAt).toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : "";
+
+const textClass = isNovis ? "text-novis-text" : "text-lilin-text";
+const mutedClass = isNovis ? "text-novis-text-muted" : "text-lilin-text-muted";
+const accentClass = isNovis ? "text-novis-accent" : "text-lilin-accent";
+const surfaceClass = isNovis ? "bg-novis-surface" : "bg-lilin-surface";
+const borderClass = isNovis ? "border-novis-border" : "border-lilin-border";
+
+const proseClass = isNovis
+  ? "prose prose-invert prose-blue"
+  : "prose prose-stone";
+---
+
+<Layout
+  title={`${title} | ${blogTitle}`}
+  description={description}
+  author={author}
+>
+  <Header author={author} />
+  <main class="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <article>
+      <header class="mb-10">
+        {
+          featureImage && (
+            <img
+              src={featureImage}
+              alt={title}
+              class="w-full h-64 object-cover rounded-lg mb-8"
+            />
+          )
+        }
+        <h1
+          class:list={[
+            "text-4xl md:text-5xl font-bold mb-4 leading-tight",
+            textClass,
+          ]}
+        >
+          {title}
+        </h1>
+        <div class:list={["flex items-center gap-4 text-sm", mutedClass]}>
+          {formattedDate && <time datetime={publishedAt}>{formattedDate}</time>}
+          {
+            tags.length > 0 && (
+              <div class="flex gap-2">
+                {tags.map((tag) => (
+                  <span
+                    class:list={[
+                      "px-2 py-1 rounded text-xs",
+                      surfaceClass,
+                      accentClass,
+                    ]}
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            )
+          }
+        </div>
+      </header>
+      <div
+        class:list={[
+          "max-w-none",
+          proseClass,
+          `prose-headings:${textClass}`,
+          `prose-p:${textClass}/90`,
+          `prose-a:${accentClass}`,
+          `prose-strong:${textClass}`,
+          `prose-code:${accentClass}`,
+          `prose-code:${surfaceClass}`,
+          "prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded",
+          `prose-pre:${surfaceClass}`,
+          "prose-pre:border",
+          `prose-pre:${borderClass}`,
+          "prose-img:rounded-lg",
+          `prose-blockquote:${borderClass}`,
+        ]}
+      >
+        <slot />
+      </div>
+    </article>
+  </main>
+  <Footer author={author} />
+</Layout>

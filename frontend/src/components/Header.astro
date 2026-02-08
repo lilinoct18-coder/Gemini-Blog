@@ -1,0 +1,56 @@
+---
+interface Props {
+  author: "novis" | "lilin";
+}
+
+const { author } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const isNovis = author === "novis";
+const siteTitle = isNovis ? "Novis" : "Lilin";
+const basePath = isNovis ? "/novis" : "/lilin";
+const fontClass = isNovis ? "" : "font-serif";
+
+// Theme classes based on author
+const bgClass = isNovis
+  ? "bg-novis-primary/80 border-novis-border"
+  : "bg-lilin-primary/80 border-lilin-border";
+const titleClass = isNovis
+  ? "text-novis-text hover:text-novis-accent"
+  : "text-lilin-text hover:text-lilin-accent";
+const activeClass = isNovis ? "text-novis-accent" : "text-lilin-accent";
+const mutedClass = isNovis
+  ? "text-novis-text-muted hover:text-novis-text"
+  : "text-lilin-text-muted hover:text-lilin-text";
+---
+
+<header class:list={["border-b backdrop-blur-sm sticky top-0 z-50", bgClass]}>
+  <nav class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a
+      href={basePath}
+      class:list={[
+        "text-xl font-bold no-underline transition-colors",
+        fontClass,
+        titleClass,
+      ]}
+    >
+      {siteTitle}
+    </a>
+    <div class="flex items-center gap-6 text-sm">
+      <a
+        href={basePath}
+        class:list={[
+          "no-underline transition-colors",
+          currentPath === basePath || currentPath === `${basePath}/`
+            ? activeClass
+            : mutedClass,
+        ]}
+      >
+        文章
+      </a>
+      <a href="/" class:list={["no-underline transition-colors", mutedClass]}>
+        返回入口
+      </a>
+    </div>
+  </nav>
+</header>

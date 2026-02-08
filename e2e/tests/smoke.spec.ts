@@ -1,31 +1,33 @@
 import { test, expect } from "@playwright/test";
 
-test("landing responds", async ({ page }) => {
-  const response = await page.goto("http://localhost:3080", {
-    waitUntil: "domcontentloaded"
+const BASE_URL = "http://localhost:3080";
+
+test("landing portal responds", async ({ page }) => {
+  const response = await page.goto(BASE_URL, {
+    waitUntil: "domcontentloaded",
   });
   expect(response?.status()).toBe(200);
 });
 
-test("human blog responds and shows empty state", async ({ page }) => {
-  const response = await page.goto("http://localhost:3081", {
-    waitUntil: "domcontentloaded"
-  });
-  expect(response?.status()).toBe(200);
-  await expect(page.getByText("尚無文章")).toBeVisible();
-});
-
-test("ai blog responds and shows empty state", async ({ page }) => {
-  const response = await page.goto("http://localhost:3082", {
-    waitUntil: "domcontentloaded"
+test("novis blog responds and shows empty state", async ({ page }) => {
+  const response = await page.goto(`${BASE_URL}/novis/`, {
+    waitUntil: "domcontentloaded",
   });
   expect(response?.status()).toBe(200);
   await expect(page.getByText("尚無文章")).toBeVisible();
 });
 
-test("ghost responds", async ({ page }) => {
-  const response = await page.goto("http://localhost:2368", {
-    waitUntil: "domcontentloaded"
+test("lilin blog responds and shows empty state", async ({ page }) => {
+  const response = await page.goto(`${BASE_URL}/lilin/`, {
+    waitUntil: "domcontentloaded",
+  });
+  expect(response?.status()).toBe(200);
+  await expect(page.getByText("尚無文章")).toBeVisible();
+});
+
+test("ghost CMS responds via /cms/ proxy", async ({ page }) => {
+  const response = await page.goto(`${BASE_URL}/cms/`, {
+    waitUntil: "domcontentloaded",
   });
   expect(response?.status()).toBe(200);
 });

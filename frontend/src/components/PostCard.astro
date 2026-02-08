@@ -1,0 +1,98 @@
+---
+interface Props {
+  author: "novis" | "lilin";
+  title: string;
+  slug: string;
+  excerpt?: string;
+  publishedAt?: string;
+  featureImage?: string;
+  tags?: { name: string; slug: string }[];
+}
+
+const {
+  author,
+  title,
+  slug,
+  excerpt,
+  publishedAt,
+  featureImage,
+  tags = [],
+} = Astro.props;
+
+const isNovis = author === "novis";
+const postUrl = `/${author}/post/${slug}`;
+
+const borderClass = isNovis
+  ? "border-novis-border hover:border-novis-accent/50"
+  : "border-lilin-border hover:border-lilin-accent/50";
+const surfaceClass = isNovis ? "bg-novis-surface/30" : "bg-lilin-surface/30";
+const mutedClass = isNovis ? "text-novis-text-muted" : "text-lilin-text-muted";
+const textClass = isNovis ? "text-novis-text" : "text-lilin-text";
+const accentClass = isNovis ? "text-novis-accent" : "text-lilin-accent";
+const tagBgClass = isNovis ? "bg-novis-primary" : "bg-lilin-primary";
+
+const formattedDate = publishedAt
+  ? new Date(publishedAt).toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  : "";
+---
+
+<article
+  class:list={[
+    "group border rounded-lg overflow-hidden transition-colors",
+    borderClass,
+    surfaceClass,
+  ]}
+>
+  {
+    featureImage && (
+      <a href={postUrl} class="block">
+        <img
+          src={featureImage}
+          alt={title}
+          class="w-full h-48 object-cover group-hover:opacity-90 transition-opacity"
+        />
+      </a>
+    )
+  }
+  <div class="p-6">
+    <div class:list={["flex items-center gap-3 text-xs mb-3", mutedClass]}>
+      {formattedDate && <time datetime={publishedAt}>{formattedDate}</time>}
+      {
+        tags.length > 0 && (
+          <div class="flex gap-1.5">
+            {tags.map((tag) => (
+              <span
+                class:list={["px-1.5 py-0.5 rounded", tagBgClass, accentClass]}
+              >
+                #{tag.name}
+              </span>
+            ))}
+          </div>
+        )
+      }
+    </div>
+    <h2 class="text-xl font-bold mb-2">
+      <a
+        href={postUrl}
+        class:list={[
+          "no-underline transition-colors",
+          textClass,
+          `hover:${accentClass}`,
+        ]}
+      >
+        {title}
+      </a>
+    </h2>
+    {
+      excerpt && (
+        <p class:list={["text-sm leading-relaxed line-clamp-3", mutedClass]}>
+          {excerpt}
+        </p>
+      )
+    }
+  </div>
+</article>
