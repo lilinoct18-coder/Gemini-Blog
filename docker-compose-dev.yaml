@@ -32,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      url: http://localhost:2368
+      url: http://localhost:3080/cms
       database__client: mysql2
       database__connection__host: mysql
       database__connection__port: 3306
@@ -45,7 +45,8 @@ services:
     ports:
       - "2368:2368"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:2368"]
+      # Ghost 設定 url=/cms，使用 wget 檢查 301 或 200 回應
+      test: ["CMD-SHELL", "wget -q -O /dev/null --server-response http://localhost:2368/cms/ 2>&1 | grep -q '301\\|200'"]
       interval: 10s
       timeout: 5s
       retries: 10

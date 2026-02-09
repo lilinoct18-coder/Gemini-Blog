@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "Waiting for Ghost (2368) to be ready..."
           for i in $(seq 1 60); do
-            HTTP_CODE=$(curl -so /dev/null -w '%{http_code}' http://localhost:2368/ 2>/dev/null || echo "000")
+            HTTP_CODE=$(curl -so /dev/null -w '%{http_code}' http://localhost:2368/cms/ 2>/dev/null || echo "000")
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
               echo "Ghost is up (HTTP $HTTP_CODE)"
               break
@@ -78,7 +78,7 @@ jobs:
             echo "  attempt $i/60 (HTTP $HTTP_CODE)..."
             sleep 5
           done
-          curl -sf http://localhost:2368/ >/dev/null || (echo "Ghost (2368) not ready"; curl -v http://localhost:2368/ 2>&1 || true; exit 1)
+          curl -sf http://localhost:2368/cms/ >/dev/null || (echo "Ghost (2368) not ready"; curl -v http://localhost:2368/cms/ 2>&1 || true; exit 1)
 
       - name: Start frontend
         run: docker compose -f docker-compose-dev.yaml up -d frontend
