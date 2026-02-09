@@ -4,7 +4,7 @@
 # Access:
 #   Frontend:  http://localhost:3080
 #   Ghost CMS: http://localhost:3080/cms  (via Nginx proxy)
-#   Ghost API: http://localhost:2368      (direct, for debugging)
+#   Ghost API: http://localhost:2368/cms  (direct, for debugging)
 
 services:
   mysql:
@@ -32,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      url: http://localhost:2368
+      url: http://localhost:3080/cms
       database__client: mysql2
       database__connection__host: mysql
       database__connection__port: 3306
@@ -45,7 +45,7 @@ services:
     ports:
       - "2368:2368"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:2368"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:2368/cms/"]
       interval: 10s
       timeout: 5s
       retries: 10
